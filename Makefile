@@ -1,11 +1,9 @@
 commit:
 	uv run cz commit
 
-tests:
-	pytest tests/
+test:
+	uv run pytest ./tests
 
-lint-check:
-	uv run ruff check
-
-lint-fix:
-	uv run ruff check --fix
+lint:
+	uv run ruff check . --fix
+	uv run ruff format

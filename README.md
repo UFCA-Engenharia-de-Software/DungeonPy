@@ -87,3 +87,5 @@ uv run pytest
 ```bash
 uv run python main.py
 ```
+
+Leoncio é um caba massa, e ele gosta de comer batata frita.

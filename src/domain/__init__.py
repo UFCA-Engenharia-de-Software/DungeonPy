@@ -1,13 +1,13 @@
 """
-Módulo Domain - Núcleo de lógica do DungeonPy.
+Domain Module - DungeonPy Core Logic.
 
-Este módulo centraliza as entidades e objetos de valor que definem as
-regras essenciais da masmorra, utilizando padrões de projeto para
-gerenciar a complexidade do combate e estados.
+This module centralizes entities and value objects that define the
+essential dungeon rules, using design patterns to manage combat
+and state complexity.
 
-Componentes principais:
-    - Entidades: Base para seres vivos como Heroi e Monstro.
-    - Equipamentos: Sistema de Itens, Inventário e Armas (Padrão Strategy).
-    - Estados: Gerenciamento de efeitos de status (Padrão State).
-    - Elementos: Definição do ciclo de vantagens elementais.
+Main components:
+    - Entities: Base for living beings like Hero and Monster.
+    - Equipment: System of Items, Inventory and Weapons (Strategy Pattern).
+    - States: Status effect management (State Pattern).
+    - Elements: Definition of elemental advantage cycle.
 """

@@ -1,20 +1,20 @@
-from domain.mixins import DescricaoMixin
+from domain.mixins import DescriptionMixin
 import pytest
 
 
-def test_mixin_implementado_corretamente():
-    class EntidadeComDescricao(DescricaoMixin):
-        def obter_descricao(self) -> str:
-            return "Descrição teste"
+def test_mixin_implemented_correctly():
+    class EntityWithDescription(DescriptionMixin):
+        def get_description(self) -> str:
+            return "Test description"
 
-    entidade = EntidadeComDescricao()
-    assert entidade.obter_descricao() == "Descrição teste"
+    entity = EntityWithDescription()
+    assert entity.get_description() == "Test description"
 
 
-def test_mixin_nao_implementado():
-    class EntidadeSemImplementacao(DescricaoMixin):
+def test_mixin_not_implemented():
+    class EntityWithoutImplementation(DescriptionMixin):
         pass
 
-    entidade = EntidadeSemImplementacao()
+    entity = EntityWithoutImplementation()
     with pytest.raises(NotImplementedError):
-        entidade.obter_descricao()
+        entity.get_description()

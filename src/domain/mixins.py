@@ -1,11 +1,11 @@
-class DescricaoMixin:
+class DescriptionMixin:
     """
-    Mixin que define o contrato para classes que possuem
-    uma descrição textual.
+    Mixin that defines the contract for classes that have
+    a textual description.
 
-    Classes que herdam deste mixin devem obrigatoriamente
-    implementar o método `obter_descricao`.
+    Classes that inherit from this mixin must implement
+    the `get_description` method.
     """
 
-    def obter_descricao(self) -> str:
-        raise NotImplementedError("A classe deve implementar obter_descricao()")
+    def get_description(self) -> str:
+        raise NotImplementedError("Class must implement get_description()")

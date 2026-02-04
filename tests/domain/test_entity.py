@@ -1,20 +1,17 @@
 import pytest
 from domain.entity import Entity
-
+from domain.element import Element
 
 """
-# 1. CRIAMOS UMA CLASSE FALSA (CONCRETA) SÓ PARA O TESTE
-# Ela herda de Entity e implementa os métodos obrigatórios com "nada"
-#Precisamos fazer isso, por causa dos métodos abstratos da entity, onde ela não pode ser executada sozinha, precisa ter uma filha que possui os próprios métodos dela "customizados"
+# 1. WE CREATE A FAKE (CONCRETE) CLASS JUST FOR TESTING
+# It inherits from Entity and implements the required methods with "do nothing" bodies
+# We need to do this because of the abstract methods in Entity; it cannot be instantiated directly, it needs a child class with its own "customized" methods
 
 """
 
 
 class EntidadeTeste(Entity):
     def strike(self, target):
-        pass
-
-    def damage_received(self, valor: int) -> None:
         pass
 
 
@@ -26,6 +23,11 @@ def test_constructor():
     assert entity_generic.current_life == 90
     assert entity_generic.attack == 20
     assert entity_generic.speed == 10
+    assert entity_generic.element == Element.NEUTRAL
+
+    # Testing attribute passing
+    entity_generic = EntidadeTeste("Monstrengo", 100, 90, 20, 10, element=Element.FIRE)
+    assert entity_generic.element == Element.FIRE
 
 
 def test_is_it_alive():
@@ -102,3 +104,31 @@ def test_combats_attributes_errors():
     # Test Speed
     with pytest.raises(TypeError):
         EntidadeTeste("Slime", 100, 99, 1, "9")
+
+
+def test_damage_elemental_interaction():
+    monstro_fogo = EntidadeTeste("Chama", 100, 100, 10, 5, element=Element.FIRE)
+
+    # Neutral damage
+    # 10 of damage -> needs to decrease life to 90 (current_life it´s 100)
+    monstro_fogo.damage_received(10, Element.NEUTRAL)
+    assert monstro_fogo.current_life == 90
+
+    # damage by weakness
+    # 10 of damage -> needs to descrease life to 70 (Multiplier it´s 2)
+    monstro_fogo.damage_received(10, Element.ICE)
+    assert monstro_fogo.current_life == 70
+
+    # damage by resistence
+    # 20 of damage -> needs to decrease life to 60 (Multiplier it´s 0.5)
+    monstro_fogo.damage_received(20, Element.POISON)
+    assert monstro_fogo.current_life == 60
+
+
+def test_element_errors():
+    with pytest.raises(TypeError):
+        EntidadeTeste("Chama", 100, 100, 10, 5, element="fogo_falso")
+
+    entity = EntidadeTeste("Chama", 100, 100, 10, 5, element=Element.FIRE)
+    with pytest.raises(TypeError):
+        entity.element = "gelo_fake"

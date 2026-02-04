@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from domain.element import Element
 
 
 class Entity(ABC):
@@ -10,25 +11,16 @@ class Entity(ABC):
         attack: int,
         speed: int,
         current_status=None,
+        element: Element = Element.NEUTRAL,
     ):
         """
-        Anotação de correção de diagrama: max_life precisa vir primeiro que current life.
 
-        Anotações ao decorrer do código:
-        current_life pode ser 0 por definir se a entidade está viva ou morta.
-        Ainda em current_life, ela precisa voltar a ser 0, caso se torne negativa.
-        Se uma entidade sofre um dano que deixa a vida maior que 0 ou recupera uma vida maior que a sua máxima, o sistema não pode crachar, mas redefinir seus valores para uma quantidade coerente.
+        Initializes the Entity with combat stats and elemental affinity.
 
-        Dagame_receive é um método abstrato, pois, dependendo da classe filha de entity os modificadores do cálculo mudam, exemplo: "Mostros possuem fraquezas e resistências elementais." | "Guerreiro possui defesa". (Polimorfismo)
-        O método abstrato serve para dizer que toda classe filha precisa fazer seu próprio método damage_received
-
-        Justificativa do nome do método "atacar". No ingês, o atacar e ataque são attack, então, para o método atacar, escolhi a palavra "strike".
-
-        Strike também é um método abstrato pelo mesmo raciocínio de damage_receive
-
-        justificativa de nome "estar_vivo" método para is it alive ? assim, o nome fica mais coerente com a função do método: "Verificar estado do da entidade"
-
-        Sobre "is it alive": Dentro do método ocorre a importação da classe State, assim, é possível fazer a validação do atributo passado sem acontecer um erro de Circular Import. None vai ser trocado para State. Por que passar State, leva a aceitar as classes filhas ? Pela Herança, garantindo que o Veneno seja um Estado, e pelo Polimorfismo permitindo que a gente passe o Veneno onde se espera um Estado. Herança e Polimorfismo andam sempre juntos.)
+        Args:
+            element (Element): The natural element of the entity. Used to calculate
+                               weakness and resistance when receiving damage.
+                               Defaults to Element.NEUTRAL.
 
         """
         self.name = name
@@ -37,6 +29,7 @@ class Entity(ABC):
         self.attack = attack
         self.speed = speed
         self.current_status = current_status
+        self.element = element
 
     @property
     def name(self):
@@ -130,9 +123,25 @@ class Entity(ABC):
         # raise TypeError("current_status must be a object from state")
         self.__current_status = valor
 
-    @abstractmethod
-    def damage_received(self, valor: int) -> None:
-        pass
+    @property
+    def element(self):
+        return self.__element
+
+    @element.setter
+    def element(self, value):
+        if not isinstance(value, Element):
+            raise TypeError(
+                "element must be a Element attribute. Example: 'Element.ICE'"
+            )
+
+        self.__element = value
+
+    def damage_received(self, value: int, strike_element: Element) -> int:
+        multiplier = strike_element.multiplier(self.element)
+
+        final_damage = int(value * multiplier)
+
+        self.current_life -= final_damage
 
     @abstractmethod
     def strike(self, target) -> None:

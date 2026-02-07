@@ -136,7 +136,7 @@ class Entity(ABC):
 
         self.__element = value
 
-    def damage_received(self, value: int, strike_element: Element) -> int:
+    def damage_received(self, value: int, strike_element: Element) -> None:
         multiplier = strike_element.multiplier(self.element)
 
         final_damage = int(value * multiplier)

@@ -3,6 +3,9 @@ from domain.element import Element
 
 
 class FakeEntity:
+    """
+    This is a 'Fake Class' for tests in state.
+    """
     def __init__(self):
         self.received_damage = []
 

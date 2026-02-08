@@ -1,4 +1,3 @@
-import pytest
 from domain.state import NeutralState, PoisonedState
 from domain.element import Element
 

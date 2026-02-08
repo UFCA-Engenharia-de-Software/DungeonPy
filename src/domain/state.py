@@ -3,12 +3,13 @@ from domain.element import Element
 
 
 class State(ABC):
-    """ 
-    The State class is designed to assign status effects to other classes. 
-    By following the advantage order over Elements, it is possible to apply effects 
+    """
+    The State class is designed to assign status effects to other classes.
+    By following the advantage order over Elements, it is possible to apply effects
     that may or may not prevent the hero/monster from taking action.
 
     """
+
     def __init__(self, name: str, duration_turns: int):
         self.name = name
         self.duration_turns = duration_turns
@@ -28,6 +29,7 @@ class NeutralState(State):
     - Applies no effects.
     - Does not prevent action.
     """
+
     def __init__(self):
         super().__init__("Neutral", 0)
 
@@ -44,6 +46,7 @@ class PoisonedState(State):
     - Applies poisoned status (x damage per turn).
     - Does not prevent action.
     """
+
     def __init__(self, duration_turns, damage_per_turns):
         super().__init__("Poison", duration_turns)
         self.damage_per_turns = damage_per_turns

@@ -27,11 +27,11 @@ class Hero(Entity):
         super().__init__(
             name, max_life, current_life, attack, speed, current_status, element
         )
-        self.inventory = inventory or Inventory()
+        self.inventory = inventory if inventory is not None else Inventory()
         self.weapon_element = weapon_element
 
     @abstractmethod
-    def strike(self, strike_elemente: Element) -> None:
+    def strike(self, target: Entity, strike_elemente: Element) -> None:
         """
         Atack enemies.
 

@@ -143,6 +143,10 @@ class Entity(ABC):
 
         self.current_life -= final_damage
 
+    @abstractmethod
+    def strike(self, target) -> None:
+        pass
+
     def set_status(self, new_status) -> None:
         # from .src.domain import state -> para evitar quebrar o código com importações em ciclo
 

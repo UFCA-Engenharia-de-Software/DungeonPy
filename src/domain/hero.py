@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from domain.entity import Entity
 from domain.element import Element
 from domain.inventory import Inventory

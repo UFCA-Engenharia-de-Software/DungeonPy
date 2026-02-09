@@ -18,7 +18,7 @@
 
 # ⚔️ DungeonPy — Explore & Sobreviva
 
-O **DungeonPy** é um _Dungeon Crawler_ tático desenvolvido em Python.  
+O **DungeonPy** é um _Dungeon Crawler_ tático desenvolvido em Python.
 O projeto foca na exploração de masmorras procedurais e combate elemental por turnos, servindo como base prática para a aplicação de conceitos avançados de **Programação Orientada a Objetos (POO)**.
 
 ## 🛠️ Tecnologias e Automação
@@ -73,17 +73,17 @@ O diagrama abaixo ilustra a estrutura das classes do sistema, evidenciando a apl
 1. **Instalar dependências:**
 
 ```bash
-uv sync
+make setup
 ```
 
 2. **Executar os testes automatizados:**
 
 ```bash
-uv run pytest
+make tests
 ```
 
 3. **Executar o jogo:**
 
 ```bash
-uv run python main.py
+make run
 ```

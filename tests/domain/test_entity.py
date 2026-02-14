@@ -1,6 +1,14 @@
 import pytest
 from domain.entity import Entity
 from domain.element import Element
+from domain.state import (
+    NeutralState,
+    BurnState,
+    FrozenState,
+    StunnedState,
+    PoisonedState,
+    State,
+)
 
 """
 # 1. WE CREATE A FAKE (CONCRETE) CLASS JUST FOR TESTING
@@ -24,10 +32,41 @@ def test_constructor():
     assert entity_generic.attack == 20
     assert entity_generic.speed == 10
     assert entity_generic.element == Element.NEUTRAL
+    # Test de current_state | Using isinstance to verify the type of a attribute is a State subclass
+    assert isinstance(entity_generic.current_status, State)
 
     # Testing attribute passing
     entity_generic = EntidadeTeste("Monstrengo", 100, 90, 20, 10, element=Element.FIRE)
     assert entity_generic.element == Element.FIRE
+
+
+def test_current_stats():
+    entity_generic = EntidadeTeste("Monstrengo", 100, 90, 20, 10)
+
+    # Verifying if all States subclasses are accepted as a valid State Object
+
+    entity_generic.current_status = BurnState(2, 2)
+    assert isinstance(entity_generic.current_status, State)
+
+    entity_generic.current_status = FrozenState(2, 2)
+    assert isinstance(entity_generic.current_status, State)
+
+    entity_generic.current_status = StunnedState()
+    assert isinstance(entity_generic.current_status, State)
+
+    entity_generic.current_status = PoisonedState(2, 2)
+    assert isinstance(entity_generic.current_status, State)
+
+    entity_generic.current_status = NeutralState()
+    assert isinstance(entity_generic.current_status, State)
+
+    # Testing an error during assignment
+    with pytest.raises(TypeError):
+        entity_generic = EntidadeTeste("Monstrengo", 100, 90, 20, 10, "HEHEHE")
+
+    # If states is None, it must convert to a NeutralState
+    entity_generic.current_status = None
+    assert isinstance(entity_generic.current_status, State)
 
 
 def test_is_it_alive():

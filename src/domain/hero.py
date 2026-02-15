@@ -57,3 +57,10 @@ class Hero(Entity):
             choice (int): selected attribute to upgrade.
         """
         pass
+
+    @abstractmethod
+    def get_actions(self) -> dict:
+        """
+        Mapping of action keys to action details.
+        """
+        pass

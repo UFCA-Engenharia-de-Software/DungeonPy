@@ -165,3 +165,26 @@ def test_rage():
     assert sample_warrior.attack == 25
     assert sample_warrior.shield == 10
     assert sample_warrior.armor == 10
+
+
+def test_get_actions():
+    sample_warrior: Warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+        shield=10,
+        armor=10,
+    )
+
+    assert sample_warrior.get_actions() == {
+        "1": {
+            "description": "Atacar (ataque básico com arma)",
+            "method": sample_warrior.strike,
+        },
+        "2": {
+            "description": "Fúria (dobra ataque, sacrifica defesa)",
+            "method": sample_warrior.to_rage,
+        },
+    }

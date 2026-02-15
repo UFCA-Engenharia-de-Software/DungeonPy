@@ -65,17 +65,24 @@ class PoisonedState(State):
 class BurnState(State):
     """
     Expected effect of Burn:
-    - Applies burn status (Reduce attack).
+    - Temporarily reduces attack.
     - Does not prevent action.
     """
 
     def __init__(self, duration_turns: int, attack_decrease: int):
-        super().__init__("Burn", duration_turns)
+        super().__init__("Burned", duration_turns)
         self.attack_decrease = attack_decrease
+        self._applied = False
 
     def apply_effect(self, entity):
-        entity.attack = max(0, entity.attack - self.attack_decrease)
+        if not self._applied:
+            entity.attack_modifiers.append(-self.attack_decrease)
+            self._applied = True
+
         self.duration_turns -= 1
+
+        if self.duration_turns <= 0:
+            entity.attack_modifiers.remove(-self.attack_decrease)
 
     def prevents_action(self) -> bool:
         return False
@@ -101,17 +108,24 @@ class StunnedState(State):
 class FrozenState(State):
     """
     Expected effect of Frozen:
-    - Applies Frozen status (speed decreased).
+    - Temporarily reduces speed.
     - Does not prevent action.
     """
 
-    def __init__(self, duration_turns, speed_decrease: int):
+    def __init__(self, duration_turns: int, speed_decrease: int):
         super().__init__("Frozen", duration_turns)
         self.speed_decrease = speed_decrease
+        self._applied = False
 
     def apply_effect(self, entity):
-        entity.speed = max(0, entity.speed - self.speed_decrease)
+        if not self._applied:
+            entity.speed_modifiers.append(-self.speed_decrease)
+            self._applied = True
+
         self.duration_turns -= 1
 
-    def prevents_action(self):
+        if self.duration_turns <= 0:
+            entity.speed_modifiers.remove(-self.speed_decrease)
+
+    def prevents_action(self) -> bool:
         return False

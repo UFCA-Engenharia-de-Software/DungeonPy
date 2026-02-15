@@ -121,3 +121,19 @@ class Warrior(Hero):
         self.armor = self.normal_state["armor"]
 
         self.normal_state = {}
+
+    def get_actions(self) -> dict:
+        """
+        Returns available combat actions for this archetype.
+        """
+
+        return {
+            "1": {
+                "description": "Atacar (ataque básico com arma)",
+                "method": self.strike,
+            },
+            "2": {
+                "description": "Fúria (dobra ataque, sacrifica defesa)",
+                "method": self.to_rage,
+            },
+        }

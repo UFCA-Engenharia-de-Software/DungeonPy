@@ -1,6 +1,7 @@
 from abc import abstractmethod
-from domain.entity import Entity
+
 from domain.element import Element
+from domain.entity import Entity
 from domain.inventory import Inventory
 
 
@@ -29,9 +30,18 @@ class Hero(Entity):
         )
         self.inventory = inventory if inventory is not None else Inventory()
         self.weapon_element = weapon_element
+        self._equipped_weapon = None
+
+    @property
+    def equipped_weapon(self):
+        return self._equipped_weapon
+
+    @equipped_weapon.setter
+    def equipped_weapon(self, value):
+        self._equipped_weapon = value
 
     @abstractmethod
-    def strike(self, target: Entity, strike_elemente: Element) -> None:
+    def strike(self, target: Entity) -> None:
         """
         Atack enemies.
 

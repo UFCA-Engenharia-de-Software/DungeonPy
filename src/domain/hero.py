@@ -1,9 +1,12 @@
 from abc import abstractmethod
+from typing import TYPE_CHECKING
 
 from domain.element import Element
 from domain.entity import Entity
 from domain.inventory import Inventory
-from domain.weapon import Weapon
+
+if TYPE_CHECKING:
+    from domain.weapon import Weapon
 
 
 class Hero(Entity):

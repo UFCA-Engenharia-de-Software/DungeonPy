@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from domain.element import Element
 from typing import TYPE_CHECKING
+from domain.state import State, NeutralState
 
 if TYPE_CHECKING:
     from domain.state import State
@@ -14,7 +15,7 @@ class Entity(ABC):
         current_life: int,
         attack: int,
         speed: int,
-        current_status: "State" = None,
+        current_status: State = None,
         element: Element = Element.NEUTRAL,
     ):
         """
@@ -117,14 +118,12 @@ class Entity(ABC):
 
     @current_status.setter
     def current_status(self, valor):
-        from domain.state import State, NeutralState
-
         if valor is None:
             self.__current_status = NeutralState()
             return
 
         if not isinstance(valor, State):
-            raise TypeError("current_status must be a object from state")
+            raise TypeError("'new_status' must be a object from state")
 
         self.__current_status = valor
 

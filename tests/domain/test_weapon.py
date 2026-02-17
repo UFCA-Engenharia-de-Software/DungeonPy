@@ -90,3 +90,63 @@ def test_attack_uses_updated_base_damage():
     weapon.attack(mock_user, mock_target)
 
     mock_target.damage_received.assert_called_once_with(25, Element.ICE)
+
+
+def test_get_attacks_returns_expected_structure():
+    weapon = Weapon(name="Sword", base_damage=10)
+
+    attacks = weapon.get_attacks()
+
+    assert isinstance(attacks, dict)
+
+    assert set(attacks.keys()) == {"1", "2"}
+
+    assert attacks["1"]["description"] == "Ataque Normal"
+    assert attacks["2"]["description"] == "Ataque Pesado"
+
+    assert callable(attacks["1"]["method"])
+    assert callable(attacks["2"]["method"])
+
+
+def test_heavy_attack_applies_double_damage():
+    weapon = Weapon(name="Sword", base_damage=10, element=Element.ICE)
+
+    mock_user = MagicMock()
+    mock_user.attack = 10
+
+    mock_target = MagicMock(spec=Entity)
+
+    weapon.heavy_attack(mock_user, mock_target)
+
+    mock_target.damage_received.assert_called_once_with(40, Element.ICE)
+
+
+def test_heavy_attack_uses_updated_base_damage():
+    weapon = Weapon(name="Sword", base_damage=5, element=Element.NEUTRAL)
+
+    weapon.base_damage = 15
+
+    mock_user = MagicMock()
+    mock_user.attack = 5
+
+    mock_target = MagicMock(spec=Entity)
+
+    weapon.heavy_attack(mock_user, mock_target)
+
+    mock_target.damage_received.assert_called_once_with(40, Element.NEUTRAL)
+
+
+def test_get_attacks_method_executes_correct_attack():
+    weapon = Weapon(name="Sword", base_damage=10, element=Element.FIRE)
+
+    mock_user = MagicMock()
+    mock_user.attack = 10
+
+    mock_target = MagicMock(spec=Entity)
+
+    attacks = weapon.get_attacks()
+
+    # Executa ataque normal via dicionário
+    attacks["1"]["method"](mock_user, mock_target)
+
+    mock_target.damage_received.assert_called_once_with(20, Element.FIRE)

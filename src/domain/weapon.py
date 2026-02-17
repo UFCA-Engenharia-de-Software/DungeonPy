@@ -32,6 +32,10 @@ class Weapon(Item):
         super().__init__(name, description, weight)
         self.base_damage = base_damage
         self.element = element
+        self._attacks = {
+            "1": {"description": "Ataque Normal", "method": self.attack},
+            "2": {"description": "Ataque Pesado", "method": self.heavy_attack},
+        }
 
     @property
     def base_damage(self) -> int:
@@ -55,9 +59,16 @@ class Weapon(Item):
             raise TypeError("element must be a Element member. Example: Element.FIRE")
         self._element = value
 
+    def get_attacks(self):
+        return self._attacks
+
     def attack(self, user: Hero, target: Entity) -> None:
-        final_damage = self._base_damage + user.attack
-        target.damage_received(final_damage, self._element)
+        damage = self.base_damage + user.attack
+        target.damage_received(damage, self.element)
+
+    def heavy_attack(self, user: Hero, target: Entity) -> None:
+        damage = int((self.base_damage + user.attack) * 2.0)
+        target.damage_received(damage, self.element)
 
     def use(self, target: Hero) -> None:
         target.equip_weapon(self)

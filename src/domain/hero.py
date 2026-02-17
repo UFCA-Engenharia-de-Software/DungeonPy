@@ -40,10 +40,6 @@ class Hero(Entity):
     def equipped_weapon(self):
         return self._equipped_weapon
 
-    @equipped_weapon.setter
-    def equipped_weapon(self, value):
-        self._equipped_weapon = value
-
     def equip_weapon(self, weapon: "Weapon") -> None:
         if self._equipped_weapon is not None:
             raise ValueError("Hero already has a weapon equipped.")

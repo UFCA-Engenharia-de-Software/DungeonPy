@@ -21,13 +21,11 @@ class Warrior(Hero):
         speed: int,
         current_status=None,
         element: Element = Element.NEUTRAL,
-        weapon_element: Element = Element.NEUTRAL,
         inventory: Inventory = None,
         #
         shield: int = 0,
         armor: int = 0,
         defend: bool = False,
-        # weapon_upgrade: int = 0,
         in_rage: bool = False,
         in_test: bool = False,
     ):
@@ -40,12 +38,10 @@ class Warrior(Hero):
             current_status,
             element,
             inventory,
-            weapon_element,
         )
         self.shield = shield
         self.armor = armor
         self.defend = defend
-        # self.weapon_upgrade = weapon_upgrade
         self.in_rage = in_rage
         #
         self.normal_state: dict = {}
@@ -56,7 +52,7 @@ class Warrior(Hero):
         """
         Atack enemies.
         """
-        target.damage_received(self.attack, self.weapon_element)
+        self.equipped_weapon.attack(self, target)
 
     def damage_received(self, value: int, strike_element: Element) -> None:
         """Defends an strike or takes damage"""
@@ -71,16 +67,12 @@ class Warrior(Hero):
 
         self.current_life -= max(0, int(final_damage - (self.shield + self.armor)))
 
-    def upgrade(self, points: int, choice: int) -> None:
-        """Upgrade specific attributes (shield, armor, weapon_upgrade)."""
-
-        match choice:
-            case 1:
-                self.shield += points
-            case 2:
-                self.armor += points
-            case _:
-                raise ValueError(f"Escolha inválida {choice}. Deve ser 1 ou 2.")
+    def upgrade(self, points: int) -> None:
+        """Upgrade specific attributes (shield, armor)."""
+        shield_increase = points // 2
+        armor_increase = points - shield_increase
+        self.shield += shield_increase
+        self.armor += armor_increase
 
     def _attempt_defend(self):
         """Check if defense succeeds based on shield strength"""

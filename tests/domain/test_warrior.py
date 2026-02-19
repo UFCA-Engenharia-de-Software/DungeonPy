@@ -1,6 +1,7 @@
 from domain.warrior import Warrior
 from domain.element import Element
 from domain.monster import Monster
+from domain.weapon import Weapon
 
 
 def test_warrior_creation() -> None:
@@ -38,9 +39,13 @@ def test_strike() -> None:
         description="A fierce dragon",
     )
 
+    weapon = Weapon(name="Sword", base_damage=1)
+    sample_warrior.inventory.add_item_to_inventory(weapon)
+    sample_warrior.equip_weapon(weapon)
+
     sample_warrior.strike(sample_monster)
 
-    assert sample_monster.current_life == 75
+    assert sample_monster.current_life == 74
 
 
 def test_damage_received():
@@ -136,11 +141,9 @@ def test_update():
         armor=10,
     )
 
-    sample_warrior.upgrade(2, 1)
-    assert sample_warrior.shield == 12
-
-    sample_warrior.upgrade(2, 2)
-    assert sample_warrior.armor == 12
+    sample_warrior.upgrade(2)
+    assert sample_warrior.shield == 11
+    assert sample_warrior.armor == 11
 
 
 def test_rage():

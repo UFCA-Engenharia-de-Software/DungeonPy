@@ -15,6 +15,16 @@ from domain.warrior import Warrior
 from domain.monster import Monster
 from domain.element import Element
 from domain.state import NeutralState, StunnedState
+from domain.weapon import Weapon
+
+
+def _create_warrior_with_weapon(**kwargs) -> Warrior:
+    """Helper to create a warrior with an equipped weapon."""
+    warrior = Warrior(**kwargs)
+    weapon = Weapon(name="Test Sword", base_damage=1)
+    warrior.inventory.add_item_to_inventory(weapon)
+    warrior.equip_weapon(weapon)
+    return warrior
 
 
 def test_combat_initialization():
@@ -249,7 +259,7 @@ def test_is_combat_over():
 
 
 def test_execute_turn_basic():
-    hero = Warrior(
+    hero = _create_warrior_with_weapon(
         name="Knight",
         max_life=100,
         current_life=100,
@@ -276,7 +286,7 @@ def test_execute_turn_basic():
 
 
 def test_combat_ends_on_monster_death():
-    hero = Warrior(
+    hero = _create_warrior_with_weapon(
         name="Knight",
         max_life=100,
         current_life=100,
@@ -303,7 +313,7 @@ def test_combat_ends_on_monster_death():
 
 
 def test_combat_ends_on_hero_death():
-    hero = Warrior(
+    hero = _create_warrior_with_weapon(
         name="Knight",
         max_life=30,
         current_life=30,
@@ -330,7 +340,7 @@ def test_combat_ends_on_hero_death():
 
 
 def test_loot_on_victory():
-    hero = Warrior(
+    hero = _create_warrior_with_weapon(
         name="Knight",
         max_life=100,
         current_life=100,
@@ -358,7 +368,7 @@ def test_loot_on_victory():
 
 
 def test_no_loot_on_defeat():
-    hero = Warrior(
+    hero = _create_warrior_with_weapon(
         name="Knight",
         max_life=20,
         current_life=20,

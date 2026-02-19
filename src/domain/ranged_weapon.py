@@ -46,8 +46,8 @@ class RangedWeapon(Weapon):
         self._ammo_required = value
 
     def attack(self, user: Hero, target: Entity) -> None:
-        if user.ammo < self._ammo_required:
+        if user.current_ammo < self._ammo_required:
             raise ValueError("Not enough ammunition.")
 
-        user.ammo -= self._ammo_required
+        user.current_ammo -= self._ammo_required
         super().attack(user, target)

@@ -41,6 +41,7 @@ class Mage(Hero):
 
         self.max_mana = max_mana
         self.current_mana = current_mana
+        self.has_meditated = False
 
     # PROPERTIES:
 
@@ -83,18 +84,38 @@ class Mage(Hero):
         self.equip_weapon(grimoire)
 
     def strike(self, target: Entity) -> str:
-        """Default attack. Tries to cast the spell from the equipped grimoire."""
-
-        if self.equipped_weapon and isinstance(self.equipped_weapon, Grimoire):
-            return self.equipped_weapon.cast_spell(self, target)
+        if self.equipped_weapon:
+            self.equipped_weapon.attack(self, target)
 
         # Fallback (no grimoire equipped):
-        damage = 1
-        target.damage_received(damage, Element.NEUTRAL)
-        return f"Na ausência de grimório, {self.name} deu um soco fraco em {target.name}! {damage} de dano."
+        else:
+            damage = 1
+            target.damage_received(damage, Element.NEUTRAL)
+            return f"Na ausência de grimório, {self.name} deu um soco fraco em {target.name}! {damage} de dano."
 
     def damage_received(self, value: int, strike_element: Element) -> None:
         super().damage_received(value, strike_element)
+
+    def meditate(self, target: Entity = None) -> str:
+        """
+        Heals half of the mage's maximum mana points.
+        Can only be used once per combat.
+        """
+        if self.has_meditated:
+            return f"{self.name} tenta meditar, mas sua mente já está exausta demais neste combate!"
+
+        mana_recovery = self.max_mana / 2
+
+        self.current_mana += mana_recovery
+        self.has_meditated = True
+
+        return f"{self.name} se concentra e medita. Recupera {mana_recovery} de MP!"
+
+    def reset_combat_states(self) -> None:
+        """
+        Called by the game system, as a combat starts or ends.
+        """
+        self.has_meditated = False
 
     def ancient_magic(self, target: Entity) -> str:
         """Mage's special attack. Costs lots of mana, deals lots of damage."""
@@ -133,9 +154,15 @@ class Mage(Hero):
                 "method": self.strike,
             }
 
-        actions["2"] = {
+        actions["3"] = {
             "description": "Magia Ancestral (MP: 50)",
             "method": self.ancient_magic,
         }
+
+        if not self.has_meditated:
+            actions["4"] = {
+                "description": f"Meditar (+ {self.max_mana / 2} MP)",
+                "method": self.meditate,
+            }
 
         return actions

@@ -38,7 +38,11 @@ class Grimoire(Item):
         self._attacks = {
             "1": {
                 "description": f"Conjurar {element.name} (MP: {mana_cost})",
-                "method": self.cast_spell,
+                "method": self.attack,
+            },
+            "2": {
+                "description": f"Conjurar {element.name} Aprimorado (MP: {mana_cost * 2})",
+                "method": self.heavy_attack,
             },
         }
 
@@ -97,12 +101,31 @@ class Grimoire(Item):
     def get_attacks(self) -> Dict[str, Any]:
         return self._attacks
 
-    def cast_spell(self, user: Hero, target: Entity) -> str:
-        if getattr(user, "current_mana", 0) < self.mana_cost:
-            return f"{user.name} não possui mana o suficiente para usar esse feitiço."
+    def attack(self, user: Hero, target: Entity) -> None:
+        """
+        Attacks. Just like that.
+        Verifies mana, consumes it and deals damage to the target.
+        """
 
+        if getattr(user, "current_mana", 0) < self.mana_cost:
+            raise ValueError(f"{user.name} não tem mana o suficiente para isso.")
+
+        # CONSUMING MANA
         user.current_mana -= self.mana_cost
+        # CALCULATING DAMAGE:
         damage = self.magic_power + user.attack
+        # STRIKES FOE:
         target.damage_received(damage, self.element)
 
-        return f"{user.name} dispara uma rajada de {self.element.name}! {damage} de dano causado."
+    def heavy_attack(self, user: Hero, target: Entity) -> None:
+        """
+        Uses a stronger attack.
+        Consumes more mana, deals more damage.
+        """
+
+        if getattr(user, "current_mana", 0) < 2 * (self.mana_cost):
+            raise ValueError(f"{user.name} não tem mana o suficiente para isso.")
+
+        user.current_mana -= 2 * (self.mana_cost)
+        damage = 1.5 * (self.magic_power + user.attack)
+        target.damage_received(damage, self.element)

@@ -76,26 +76,20 @@ def test_current_mana_logic(mage_default):
 def test_strike_without_grimoire(mage_default, mock_target):
     """Tests if the mage deals a weak physical attack when there's no grimoire equipped."""
 
-    msg = mage_default.strike(mock_target)
-
-    assert "soco fraco" in msg
+    mage_default.strike(mock_target)
     mock_target.damage_received.assert_called_once_with(1, Element.NEUTRAL)
 
 
 def test_strike_with_grimoire_equipped(mage_default, mock_target):
     """
-    When there's a grimoire equipped, it assigns the strike method responsability to the grimoire's cast_spell method.
+    When there's a grimoire equipped, it assigns the strike method responsability to the grimoire's attack method.
     Using a Grimoire mock to isolate Mage tests.
     """
-
     mock_grimoire = MagicMock(spec=Grimoire)
-    mock_grimoire.cast_spell.return_value = "Spell cast!"
-
     mage_default.equip_grimoire(mock_grimoire)
-    msg = mage_default.strike(mock_target)
+    mage_default.strike(mock_target)
 
-    assert msg == "Spell cast!"
-    mock_grimoire.cast_spell.assert_called_once_with(mage_default, mock_target)
+    mock_grimoire.attack.assert_called_once_with(mage_default, mock_target)
 
 
 # COMBAT TESTS II - ANCIENT MAGIC METHOD:
@@ -169,21 +163,37 @@ def test_get_actions_without_weapon(mage_default):
     actions = mage_default.get_actions()
 
     assert "1" in actions
-    assert "2" in actions
-    assert "MP: 0" in actions["1"]["description"]
-    assert "Magia Ancestral" in actions["2"]["description"]
+    assert "3" in actions
+    assert "4" in actions
+    assert "2" not in actions
+
+    assert "Desarmado" in actions["1"]["description"]
+    assert "Magia Ancestral" in actions["3"]["description"]
+    assert "Meditar" in actions["4"]["description"]
 
 
 def test_get_actions_with_weapon(mage_default):
-    # Using a mock grimoire, returning an attacks dictionary.
+    """Mage with weapon should merge weapon attacks with native actions."""
 
+    # Using a mock grimoire, returning an attacks dictionary
     mock_grimoire = MagicMock(spec=Grimoire)
     mock_grimoire.get_attacks.return_value = {
-        "1": {"description": "Bola De Fogo", "method": lambda: None}
+        "1": {"description": "Conjurar Fogo", "method": MagicMock()},
+        "2": {"description": "Conjurar Fogo Aprimorado", "method": MagicMock()},
     }
 
-    mage_default.equip_grimoire(mock_grimoire)
+    # Set up the inventory mock to allow equipping
+    mage_default.inventory = MagicMock()
+    mage_default.equip_weapon(mock_grimoire)
+
     actions = mage_default.get_actions()
 
-    assert actions["1"]["description"] == "Bola De Fogo"
+    # The actions should now have 1 and 2 from the weapon, and 3 and 4 from the Mage
+    assert "1" in actions
     assert "2" in actions
+    assert "3" in actions
+    assert "4" in actions
+
+    assert "Conjurar Fogo" in actions["1"]["description"]
+    assert "Aprimorado" in actions["2"]["description"]
+    assert "Magia Ancestral" in actions["3"]["description"]

@@ -24,8 +24,3 @@ dev = [
 now = true
 clear = true
 runner_args = ["-x", "--tb=short", "-v"]
-
-# [tool.uv.scripts]
-# test = "pytest tests/"
-# lint = "ruff check ."
-# commit = "cz c"

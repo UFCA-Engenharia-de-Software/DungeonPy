@@ -24,7 +24,6 @@ class Mage(Hero):
         speed: int,
         current_status=None,
         element: Element = Element.NEUTRAL,
-        weapon_element: Element = Element.NEUTRAL,
         inventory: Inventory = None,
     ):
         super().__init__(
@@ -36,7 +35,6 @@ class Mage(Hero):
             current_status,
             element,
             inventory,
-            weapon_element,
         )
 
         self.max_mana = max_mana

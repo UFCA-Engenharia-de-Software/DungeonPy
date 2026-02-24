@@ -50,9 +50,15 @@ class Warrior(Hero):
 
     def strike(self, target: Entity) -> None:
         """
-        Atack enemies.
+        Atack enemies with default choice.
         """
         self.equipped_weapon.attack(self, target)
+
+    def heavy_strike(self, target: Entity) -> None:
+        """
+        Atack enemies with heavy choice.
+        """
+        self.equipped_weapon.heavy_attack(self, target)
 
     def damage_received(self, value: int, strike_element: Element) -> None:
         """Defends an strike or takes damage"""

@@ -7,6 +7,9 @@ run:
 test:
 	uv run pytest ./tests
 
+ptw:
+	uv run pytest-watcher .
+
 lint:
 	uv run ruff check . --fix
 	uv run ruff format

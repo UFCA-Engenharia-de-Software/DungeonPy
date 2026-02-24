@@ -8,6 +8,22 @@ if TYPE_CHECKING:
 
 
 class Entity(ABC):
+    """
+    An abstract base class that represents any living being in the game (Heroes, Monsters, etc.).
+
+    The `Entity` class is the core of the DungeonPy combat system. It centralizes
+    the management of fundamental attributes (life, attack, speed), elemental affinities, and condition states (poisoned, frozen, etc.). Being an abstract class, it defines a contract that all child classes must follow, but it cannot be directly instantiated.
+
+    Attributes:
+    name (str): The entity's name.
+    max_life (int): The maximum amount of life points.
+    current_life (int): The current life. Never exceeds `max_life` and does not fall below 0.
+    attack (int): The entity's base attack power.
+    speed (int): The speed, usually used to calculate turn order or dodge.
+    element (Element): The entity's elemental affinity (e.g., Fire, Ice, Neutral).
+    current_status (State): The current condition state. (e.g., BurnState, PoisonedState, NeutralState).
+    """
+
     def __init__(
         self,
         name: str,
@@ -18,16 +34,6 @@ class Entity(ABC):
         current_status: State = None,
         element: Element = Element.NEUTRAL,
     ):
-        """
-
-        Initializes the Entity with combat stats and elemental affinity.
-
-        Args:
-            element (Element): The natural element of the entity. Used to calculate
-                               weakness and resistance when receiving damage.
-                               Defaults to Element.NEUTRAL.
-
-        """
         self.name = name
         self.max_life = max_life
         self.current_life = current_life
@@ -141,6 +147,10 @@ class Entity(ABC):
         self.__element = value
 
     def damage_received(self, value: int, strike_element: Element) -> None:
+        """
+        Applies damage to the entity's current life, calculating the multiplier
+        based on elemental weaknesses and strengths.
+        """
         multiplier = strike_element.multiplier(self.element)
 
         final_damage = int(value * multiplier)
@@ -152,7 +162,25 @@ class Entity(ABC):
         pass
 
     def set_status(self, new_status) -> None:
+        """Change the entity`s current_status"""
         self.current_status = new_status
 
     def is_it_alive(self) -> bool:
         return self.current_life > 0
+
+    def heal_life(self, value: int) -> None:
+        """
+        Restores a specific amount of health to the entity, ensuring it
+        doesn't exceed the maximum life limit.
+        """
+
+        if not isinstance(value, int):
+            raise TypeError("Value to heal life must be a whole number")
+
+        if value < 0:
+            raise ValueError("Value to heal life must be greater than 0")
+
+        self.current_life += value
+
+        if self.current_life > self.max_life:
+            self.current_life = self.max_life

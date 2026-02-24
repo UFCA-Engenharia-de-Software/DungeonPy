@@ -35,13 +35,13 @@ def test_attack_consumes_ammo():
 
     user = MagicMock()
     user.attack = 5
-    user.ammo = 10
+    user.current_ammo = 10
 
     target = MagicMock()
 
     weapon.attack(user, target)
 
-    assert user.ammo == 7
+    assert user.current_ammo == 7
 
     target.damage_received.assert_called_once_with(15, weapon.element)
 
@@ -51,11 +51,11 @@ def test_attack_raises_when_not_enough_ammo():
 
     user = MagicMock()
     user.attack = 5
-    user.ammo = 3  # insufficient
+    user.current_ammo = 3  # insufficient
 
     target = MagicMock()
 
     with pytest.raises(ValueError):
         weapon.attack(user, target)
 
-    assert user.ammo == 3
+    assert user.current_ammo == 3

@@ -27,13 +27,11 @@ class Hero(Entity):
         current_status=None,
         element: Element = Element.NEUTRAL,
         inventory: Inventory = None,
-        weapon_element: Element = Element.NEUTRAL,
     ):
         super().__init__(
             name, max_life, current_life, attack, speed, current_status, element
         )
         self.inventory = inventory if inventory is not None else Inventory()
-        self.weapon_element = weapon_element
         self._equipped_weapon = None
 
     @property

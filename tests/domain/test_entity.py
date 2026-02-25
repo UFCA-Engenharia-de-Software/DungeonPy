@@ -171,3 +171,39 @@ def test_element_errors():
     entity = EntidadeTeste("Chama", 100, 100, 10, 5, element=Element.FIRE)
     with pytest.raises(TypeError):
         entity.element = "gelo_fake"
+
+
+def test_normal_heal_life():
+    entity_generic = EntidadeTeste(
+        name="Monstrengo", max_life=100, current_life=90, attack=20, speed=10
+    )
+
+    entity_generic.heal_life(10)
+    assert entity_generic.current_life == 100
+
+
+def test_heal_life_prevents_exceeding_max_life():
+    entity_generic = EntidadeTeste(
+        name="Monstrengo", max_life=100, current_life=90, attack=20, speed=10
+    )
+
+    entity_generic.heal_life(200)
+    assert entity_generic.current_life == 100
+
+
+def test_heal_life_validation_type():
+    entity_generic = EntidadeTeste(
+        name="Monstrengo", max_life=100, current_life=90, attack=20, speed=10
+    )
+
+    with pytest.raises(TypeError):
+        entity_generic.heal_life("10")
+
+
+def test_heal_life_validation_value():
+    entity_generic = EntidadeTeste(
+        name="Monstrengo", max_life=100, current_life=90, attack=20, speed=10
+    )
+
+    with pytest.raises(ValueError):
+        entity_generic.heal_life(-1)

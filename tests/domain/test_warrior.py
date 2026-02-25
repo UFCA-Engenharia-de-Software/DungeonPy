@@ -48,6 +48,34 @@ def test_strike() -> None:
     assert sample_monster.current_life == 74
 
 
+def test_heavy_strike() -> None:
+    sample_warrior: Warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+
+    sample_monster: Monster = Monster(
+        name="Fire Dragon",
+        max_life=100,
+        attack=25,
+        speed=10,
+        element=Element.FIRE,
+        loot=["Dragon Scale"],
+        description="A fierce dragon",
+    )
+
+    weapon = Weapon(name="Sword", base_damage=1)
+    sample_warrior.inventory.add_item_to_inventory(weapon)
+    sample_warrior.equip_weapon(weapon)
+
+    sample_warrior.heavy_strike(sample_monster)
+
+    assert sample_monster.current_life == 48
+
+
 def test_damage_received():
     sample_warrior: Warrior = Warrior(
         name="Errant Knight",

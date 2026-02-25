@@ -1,5 +1,5 @@
 from __future__ import annotations
-from domain.item import Item
+from domain.weapon import Weapon
 from domain.element import Element
 from typing import TYPE_CHECKING, Dict, Any
 
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from domain.hero import Hero
 
 
-class Grimoire(Item):
+class Grimoire(Weapon):
     """
     Represents a magic spells book.
     Unlike melee and ranged weapons, it consumes Mana and defines the mage's attack element.
@@ -30,11 +30,16 @@ class Grimoire(Item):
 
         desc = f"Um grimório antigo, cujas runas emanam {element.name}."
 
-        super().__init__(name, description=desc, weight=weight)
+        super().__init__(
+            name=name,
+            description=desc,
+            weight=weight,
+            base_damage=magic_power,
+            element=element,
+        )
 
-        self.element = element
-        self.magic_power = magic_power
         self.mana_cost = mana_cost
+
         self._attacks = {
             "1": {
                 "description": f"Conjurar {element.name} (MP: {mana_cost})",
@@ -49,28 +54,8 @@ class Grimoire(Item):
     # GETTERS & SETTERS:
 
     @property
-    def element(self) -> Element:
-        return self._element
-
-    @element.setter
-    def element(self, value: Element) -> None:
-        if not isinstance(value, Element):
-            raise TypeError(
-                "The element must belong to the Element type. EX: Element.FIRE"
-            )
-        self._element = value
-
-    @property
     def magic_power(self) -> int:
-        return self._magic_power
-
-    @magic_power.setter
-    def magic_power(self, value: int) -> None:
-        if not isinstance(value, int):
-            raise TypeError("Magic Power must have a 'int' value.")
-        if value < 0:
-            raise ValueError("Magic Power can't go below 0.")
-        self._magic_power = value
+        return self.base_damage
 
     @property
     def mana_cost(self) -> int:
@@ -104,7 +89,7 @@ class Grimoire(Item):
     def attack(self, user: Hero, target: Entity) -> None:
         """
         Attacks. Just like that.
-        Verifies mana, consumes it and deals damage to the target.
+        Verifies mana, consumes it and deals damage to the target as in the Weapon class.
         """
 
         if getattr(user, "current_mana", 0) < self.mana_cost:
@@ -112,20 +97,19 @@ class Grimoire(Item):
 
         # CONSUMING MANA
         user.current_mana -= self.mana_cost
-        # CALCULATING DAMAGE:
-        damage = self.magic_power + user.attack
-        # STRIKES FOE:
-        target.damage_received(damage, self.element)
+        super().attack(user, target)
 
     def heavy_attack(self, user: Hero, target: Entity) -> None:
         """
         Uses a stronger attack.
         Consumes more mana, deals more damage.
         """
-
-        if getattr(user, "current_mana", 0) < 2 * (self.mana_cost):
+        if getattr(user, "current_mana", 0) < self.mana_cost:
             raise ValueError(f"{user.name} não tem mana o suficiente para isso.")
 
-        user.current_mana -= 2 * (self.mana_cost)
-        damage = 1.5 * (self.magic_power + user.attack)
-        target.damage_received(damage, self.element)
+        heavy_cost = 2 * self.mana_cost
+        if getattr(user, "current_mana", 0) < heavy_cost:
+            raise ValueError(f"{user.name} não tem mana o suficiente para isso.")
+
+        user.current_mana -= heavy_cost
+        super().heavy_attack(user, target)

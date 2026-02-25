@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
 import pytest
 from domain.grimoire import Grimoire
-from domain.item import Item
 from domain.element import Element
+from domain.weapon import Weapon
 
 # INITIALIZATION TESTS:
 
@@ -18,10 +18,11 @@ def test_grimoire_creation_valid():
         weight=3.0,
     )
 
-    assert isinstance(book, Item)
+    assert isinstance(book, Weapon)
     assert book.name == "Tome Of Fire"
     assert book.element == Element.FIRE
     assert book.magic_power == 20
+    assert book.base_damage == 20
     assert book.mana_cost == 10
     assert book.weight == 3.0
     assert "FIRE" in book.get_description()
@@ -46,7 +47,7 @@ def test_grimoire_attacks_structure():
 
 
 def test_magic_power_validation():
-    """Tests if magic_power rejects invalid values."""
+    """Tests if magic_power (mapped to base_damage) rejects validates correctly."""
 
     with pytest.raises(TypeError):
         Grimoire("Book", Element.FIRE, magic_power="strong as hell", mana_cost=5)  # type: ignore
@@ -135,7 +136,7 @@ def test_heavy_attack_success():
     book.heavy_attack(mock_user, mock_target)
 
     assert mock_user.current_mana == 30
-    mock_target.damage_received.assert_called_once_with(30, Element.FIRE)
+    mock_target.damage_received.assert_called_once_with(40, Element.FIRE)
 
 
 def test_heavy_attack_insufficient_mana():

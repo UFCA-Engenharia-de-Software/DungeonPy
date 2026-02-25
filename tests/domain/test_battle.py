@@ -279,7 +279,7 @@ def test_execute_turn_basic():
 
     battle = Battle(hero, monster)
 
-    result = battle.execute_turn(player_choice="attack")
+    result = battle.execute_turn(player_choice="1")
 
     assert monster.current_life < monster.max_life
     assert result["result"] == "ongoing"
@@ -306,7 +306,7 @@ def test_combat_ends_on_monster_death():
 
     battle = Battle(hero, monster)
 
-    result = battle.execute_turn(player_choice="attack")
+    result = battle.execute_turn(player_choice="1")
 
     assert result["result"] == "victory"
     assert monster.current_life <= 0
@@ -333,7 +333,7 @@ def test_combat_ends_on_hero_death():
 
     battle = Battle(hero, monster)
 
-    result = battle.execute_turn(player_choice="attack")
+    result = battle.execute_turn(player_choice="1")
 
     assert result["result"] == "defeat"
     assert hero.current_life <= 0
@@ -360,8 +360,7 @@ def test_loot_on_victory():
 
     battle = Battle(hero, monster)
 
-    battle.execute_turn(player_choice="attack")
-    result = battle.get_combat_result()
+    result = battle.execute_turn(player_choice="1")
 
     assert result["result"] == "victory"
     assert result["loot"] == ["Scale", "Claw"]
@@ -388,8 +387,7 @@ def test_no_loot_on_defeat():
 
     battle = Battle(hero, monster)
 
-    battle.execute_turn(player_choice="attack")
-    result = battle.get_combat_result()
+    result = battle.execute_turn(player_choice="1")
 
     assert result["result"] == "defeat"
     assert result["loot"] == []

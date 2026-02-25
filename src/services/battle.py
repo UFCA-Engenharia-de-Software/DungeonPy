@@ -69,25 +69,32 @@ class Battle:
 
         return not self.hero.is_active or not self.monster.is_active
 
-    def _execute_hero_action(self, choice: str) -> str:
+    def _execute_hero_action(self, choice: str, turn_log: dict) -> None:
         actions = self.get_available_actions()
-        if choice in actions.keys():
-            actions[choice](self.monster)
-        else:
+
+        if choice not in actions:
             raise ValueError(f"Ação {choice} é inválida.")
+
+        selected_action = actions[choice]
+        action_method = selected_action["method"]
+        action_description = selected_action["description"]
+
+        """
+        Executes the action.
+        Some actions require a target (strike)
+        Others do not (rage, aim, reload)
+        """
+        try:
+            action_method(self.monster)
+        except TypeError:
+            action_method()
+
+        turn_log["actions"].append(f"{self.hero.name} executou '{action_description}'.")
 
     def get_available_actions(self) -> dict:
         return self.hero.get_actions()
 
     def execute_turn(self, player_choice: str) -> dict:
-        # Para cada entidade na turn_order:
-        #   1. _apply_status_effects
-        #   2. _is_combat_over (efeito pode matar)
-        #   3. _can_act (stunned pula turno)
-        #   4. Se HERÓI → _execute_hero_action(player_choice)
-        #      Se MONSTRO → monster.strike(hero)
-        #   5. _is_combat_over
-        # Retorna dict com log do turno
         turn_log = {
             "turn": self.turn_count + 1,
             "actions": [],
@@ -96,41 +103,31 @@ class Battle:
         }
 
         for entity in self.turn_order:
-            # 1. Aplica efeitos de status
+            # Apply status effects
             self._apply_status_effects(entity)
-
             turn_log["status"][entity.name] = entity.current_status.name
 
-            # 2. Verifica se o combate acabou (status pode matar)
+            # Check if died from effect
             if self._is_combat_over():
                 turn_log["combat_over"] = True
                 self.is_combat_active = False
                 break
 
-            # 3. Verifica se pode agir
+            # Check if can act
             if not self._can_act(entity):
                 turn_log["actions"].append(
                     f"{entity.name} está impedido de agir ({entity.current_status.name})."
                 )
                 continue
 
-            # 4. Executa ação
+            # Execute action
             if entity is self.hero:
-                if player_choice == "attack":
-                    self.hero.strike(self.monster)
-                    executed_action = "attack"
-                else:
-                    raise ValueError(f"Ação {player_choice} é inválida.")
-
-                turn_log["actions"].append(
-                    f"{entity.name} executou a ação '{executed_action}'."
-                )
-
+                self._execute_hero_action(player_choice, turn_log)
             else:
                 entity.strike(self.hero)
                 turn_log["actions"].append(f"{entity.name} atacou {self.hero.name}.")
 
-            # 5. Verifica novamente se o combate acabou
+            # Check again for end of combat
             if self._is_combat_over():
                 turn_log["combat_over"] = True
                 self.is_combat_active = False
@@ -138,6 +135,7 @@ class Battle:
 
         combat_result = self.get_combat_result()
         self.turn_count += 1
+
         return {
             "result": combat_result["result"],
             "loot": combat_result["loot"],

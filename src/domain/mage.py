@@ -91,6 +91,14 @@ class Mage(Hero):
             target.damage_received(damage, Element.NEUTRAL)
             return f"Na ausência de grimório, {self.name} deu um soco fraco em {target.name}! {damage} de dano."
 
+    def heavy_strike(self, target: Entity) -> str:
+        """Attack enemies with heavy choice."""
+        if self.equipped_weapon:
+            self.equipped_weapon.heavy_attack(self, target)
+
+        else:
+            raise ValueError("No equipped weapon!")
+
     def damage_received(self, value: int, strike_element: Element) -> None:
         super().damage_received(value, strike_element)
 
@@ -144,23 +152,26 @@ class Mage(Hero):
         actions = {}
 
         if self.equipped_weapon:
-            actions.update(self.equipped_weapon.get_attacks())
-
-        else:
             actions["1"] = {
-                "description": "Ataque Desarmado (MP: 0)",
+                "description": f"Magia Básica ({self.equipped_weapon.name})",
                 "method": self.strike,
             }
-
+            actions["2"] = {
+                "description": f"Magia Aprimorada ({self.equipped_weapon.name})",
+                "method": self.heavy_strike,
+            }
+        else:
+            actions["1"] = {
+                "description": "Soco Fraco (MP: 0)",
+                "method": self.strike,
+            }
         actions["3"] = {
             "description": "Magia Ancestral (MP: 50)",
             "method": self.ancient_magic,
         }
-
-        if not self.has_meditated:
-            actions["4"] = {
-                "description": f"Meditar (+ {self.max_mana / 2} MP)",
-                "method": self.meditate,
-            }
+        actions["4"] = {
+            "description": f"Meditar (+{self.max_mana / 2} MP)",
+            "method": self.meditate,
+        }
 
         return actions

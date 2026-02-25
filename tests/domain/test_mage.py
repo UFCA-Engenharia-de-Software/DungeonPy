@@ -167,7 +167,7 @@ def test_get_actions_without_weapon(mage_default):
     assert "4" in actions
     assert "2" not in actions
 
-    assert "Desarmado" in actions["1"]["description"]
+    assert "Soco Fraco" in actions["1"]["description"]
     assert "Magia Ancestral" in actions["3"]["description"]
     assert "Meditar" in actions["4"]["description"]
 
@@ -175,25 +175,22 @@ def test_get_actions_without_weapon(mage_default):
 def test_get_actions_with_weapon(mage_default):
     """Mage with weapon should merge weapon attacks with native actions."""
 
-    # Using a mock grimoire, returning an attacks dictionary
+    # Using a named mock grimoire
     mock_grimoire = MagicMock(spec=Grimoire)
-    mock_grimoire.get_attacks.return_value = {
-        "1": {"description": "Conjurar Fogo", "method": MagicMock()},
-        "2": {"description": "Conjurar Fogo Aprimorado", "method": MagicMock()},
-    }
+    mock_grimoire.name = "Tome Of Fire"
 
-    # Set up the inventory mock to allow equipping
+    # Equips the grimoire
     mage_default.inventory = MagicMock()
     mage_default.equip_weapon(mock_grimoire)
 
     actions = mage_default.get_actions()
 
-    # The actions should now have 1 and 2 from the weapon, and 3 and 4 from the Mage
     assert "1" in actions
     assert "2" in actions
     assert "3" in actions
     assert "4" in actions
 
-    assert "Conjurar Fogo" in actions["1"]["description"]
-    assert "Aprimorado" in actions["2"]["description"]
+    assert "Magia Básica (Tome Of Fire)" in actions["1"]["description"]
+    assert "Magia Aprimorada (Tome Of Fire)" in actions["2"]["description"]
     assert "Magia Ancestral" in actions["3"]["description"]
+    assert "Meditar" in actions["4"]["description"]

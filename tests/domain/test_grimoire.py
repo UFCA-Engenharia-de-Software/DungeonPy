@@ -11,7 +11,7 @@ def test_grimoire_creation_valid():
     """Tests if the grimoire creation uses the right attributes."""
 
     book = Grimoire(
-        name="Tome of Fire",
+        name="Tome Of Fire",
         element=Element.FIRE,
         magic_power=20,
         mana_cost=10,

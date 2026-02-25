@@ -42,11 +42,11 @@ class Grimoire(Weapon):
 
         self._attacks = {
             "1": {
-                "description": f"Conjurar {element.name} (MP: {mana_cost})",
+                "description": f"Conjurar {element.name} (MP: {self.mana_cost})",
                 "method": self.attack,
             },
             "2": {
-                "description": f"Conjurar {element.name} Aprimorado (MP: {mana_cost * 2})",
+                "description": f"Conjurar {element.name} Aprimorado (MP: {self.mana_cost * 2})",
                 "method": self.heavy_attack,
             },
         }
@@ -56,6 +56,10 @@ class Grimoire(Weapon):
     @property
     def magic_power(self) -> int:
         return self.base_damage
+
+    @magic_power.setter
+    def magic_power(self, value: int) -> None:
+        self.base_damage = value
 
     @property
     def mana_cost(self) -> int:
@@ -104,9 +108,6 @@ class Grimoire(Weapon):
         Uses a stronger attack.
         Consumes more mana, deals more damage.
         """
-        if getattr(user, "current_mana", 0) < self.mana_cost:
-            raise ValueError(f"{user.name} não tem mana o suficiente para isso.")
-
         heavy_cost = 2 * self.mana_cost
         if getattr(user, "current_mana", 0) < heavy_cost:
             raise ValueError(f"{user.name} não tem mana o suficiente para isso.")

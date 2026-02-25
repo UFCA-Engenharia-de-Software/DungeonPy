@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
 import pytest
 from domain.grimoire import Grimoire
-from domain.item import Item
 from domain.element import Element
+from domain.weapon import Weapon
 
 # INITIALIZATION TESTS:
 
@@ -11,17 +11,18 @@ def test_grimoire_creation_valid():
     """Tests if the grimoire creation uses the right attributes."""
 
     book = Grimoire(
-        name="Tome of Fire",
+        name="Tome Of Fire",
         element=Element.FIRE,
         magic_power=20,
         mana_cost=10,
         weight=3.0,
     )
 
-    assert isinstance(book, Item)
+    assert isinstance(book, Weapon)
     assert book.name == "Tome Of Fire"
     assert book.element == Element.FIRE
     assert book.magic_power == 20
+    assert book.base_damage == 20
     assert book.mana_cost == 10
     assert book.weight == 3.0
     assert "FIRE" in book.get_description()
@@ -35,15 +36,18 @@ def test_grimoire_attacks_structure():
 
     assert isinstance(attacks, dict)
     assert "1" in attacks
+    assert "2" in attacks
     assert "MP: 5" in attacks["1"]["description"]
     assert callable(attacks["1"]["method"])
+    assert "MP: 10" in attacks["2"]["description"]
+    assert callable(attacks["2"]["method"])
 
 
 # VALIDATION TESTS:
 
 
 def test_magic_power_validation():
-    """Tests if magic_power rejects invalid values."""
+    """Tests if magic_power (mapped to base_damage) rejects validates correctly."""
 
     with pytest.raises(TypeError):
         Grimoire("Book", Element.FIRE, magic_power="strong as hell", mana_cost=5)  # type: ignore
@@ -72,34 +76,29 @@ def test_element_validation():
 # COMBAT TESTS:
 
 
-def test_cast_spell_success():
-    """Creates a dream-scenario for the cast_spell() method: user has mana, uses it and deals damage.
+def test_attack_success():
+    """Creates a dream-scenario for the attack() method: user has mana, uses it and deals damage.
     Using mocks to isolate Grimoire tests.
     """
 
     book = Grimoire("Book", Element.LIGHTNING, magic_power=15, mana_cost=10)
 
-    # USER MOCKS:
-
+    # USER MOCK:
     mock_user = MagicMock()
     mock_user.name = "Merlin"
     mock_user.current_mana = 50
     mock_user.attack = 5
 
     # TARGET MOCK:
-
     mock_target = MagicMock()
-    mock_target.name = "Goblin"
 
-    message = book.cast_spell(mock_user, mock_target)
+    book.attack(mock_user, mock_target)
 
     assert mock_user.current_mana == 40
     mock_target.damage_received.assert_called_once_with(20, Element.LIGHTNING)
-    assert "Merlin" in message
-    assert "LIGHTNING" in message
 
 
-def test_cast_spell_insufficient_mana():
+def test_attack_insufficient_mana():
     """
     Tests if the attack doesn't work when there's no sufficient mana.
     """
@@ -107,18 +106,52 @@ def test_cast_spell_insufficient_mana():
     book = Grimoire("Ultima", Element.POISON, magic_power=100, mana_cost=50)
 
     # MOCKS:
-
     mock_user = MagicMock()
     mock_user.name = "Apprentice"
     mock_user.current_mana = 10
 
     mock_target = MagicMock()
 
-    message = book.cast_spell(mock_user, mock_target)
+    with pytest.raises(ValueError, match="não tem mana o suficiente"):
+        book.attack(mock_user, mock_target)
 
-    assert mock_user.current_mana == 10
     mock_target.damage_received.assert_not_called()
-    assert "não possui mana" in message
+    assert mock_user.current_mana == 10
+
+
+def test_heavy_attack_success():
+    """
+    Tests if the heavy_attack() method actually consumes 2x the mana of a standard attack and boosts the damage correctly.
+    """
+
+    book = Grimoire("Tome of Fire", Element.FIRE, magic_power=15, mana_cost=10)
+
+    mock_user = MagicMock()
+    mock_user.name = "Merlin"
+    mock_user.current_mana = 50
+    mock_user.attack = 5
+
+    mock_target = MagicMock()
+
+    book.heavy_attack(mock_user, mock_target)
+
+    assert mock_user.current_mana == 30
+    mock_target.damage_received.assert_called_once_with(40, Element.FIRE)
+
+
+def test_heavy_attack_insufficient_mana():
+    """Tests if the heavy attack blocks execution if user lacks double mana."""
+    book = Grimoire("Ultima", Element.POISON, magic_power=100, mana_cost=50)
+
+    mock_user = MagicMock()
+    mock_user.name = "Apprentice"
+    mock_user.current_mana = 80
+    mock_target = MagicMock()
+
+    with pytest.raises(ValueError):
+        book.heavy_attack(mock_user, mock_target)
+
+    mock_target.damage_received.assert_not_called()
 
 
 # USE() METHOD TESTS:

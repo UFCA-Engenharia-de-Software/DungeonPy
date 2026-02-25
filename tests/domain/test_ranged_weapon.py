@@ -126,3 +126,35 @@ def test_attack_raises_when_not_enough_ammo():
         weapon.attack(user, target)
 
     assert user.current_ammo == 3
+
+
+def test_heavy_attack_deals_double_damage_and_consumes_ammo():
+    weapon = RangedWeapon("Bow", 10, ammo_required=2, hit_probability=100)
+
+    user = MagicMock()
+    user.attack = 5
+    user.current_ammo = 10
+    user.is_aiming = False
+
+    target = MagicMock()
+
+    weapon.heavy_attack(user, target)
+
+    assert user.current_ammo == 8
+    target.damage_received.assert_called_once_with(30, weapon.element)
+
+
+def test_heavy_attack_raises_when_not_enough_ammo():
+    weapon = RangedWeapon("Bow", 10, ammo_required=5)
+
+    user = MagicMock()
+    user.attack = 5
+    user.current_ammo = 3
+    user.is_aiming = False
+
+    target = MagicMock()
+
+    with pytest.raises(ValueError):
+        weapon.heavy_attack(user, target)
+
+    assert user.current_ammo == 3

@@ -76,3 +76,18 @@ class RangedWeapon(Weapon):
 
         if random.randint(1, 100) <= self._hit_probability:
             super().attack(archer_user, target)
+
+    def heavy_attack(self, user, target):
+        archer_user = cast("Archer", user)
+
+        if archer_user.current_ammo < self._ammo_required:
+            raise ValueError("Not enough ammunition.")
+
+        archer_user.current_ammo -= self._ammo_required
+
+        if archer_user.is_aiming:
+            super().heavy_attack(archer_user, target)
+            return
+
+        if random.randint(1, 100) <= self._hit_probability:
+            super().heavy_attack(archer_user, target)

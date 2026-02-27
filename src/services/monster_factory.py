@@ -1,3 +1,4 @@
+from services.arts import MONSTER_ARTS
 import random
 from domain.monster import Monster
 from domain.element import Element
@@ -10,10 +11,10 @@ class MonsterFactory:
     """
 
     BASE_NAMES = {
-        Element.FIRE: ["Salamandra", "Demônio Ígneo", "Espírito Vulcânico"],
-        Element.ICE: ["Golem de Gelo", "Lobo Glacial", "Espectro Congelado"],
-        Element.LIGHTNING: ["Serpente Elétrica", "Raijin", "Elemental de Raio"],
-        Element.POISON: ["Aranha Tóxica", "Hidra Venenosa", "Slime Corrosivo"],
+        Element.FIRE: ["Salamandra", "Lobo de Fogo", "Cavaleiro de Fogo"],
+        Element.ICE: ["Golem de Gelo", "Yeti", "Espectro Congelado"],
+        Element.LIGHTNING: ["Medusa Elétrica", "Raijin", "Elemental de Raio"],
+        Element.POISON: ["Aranha Tóxica", "Sapo Venenoso", "Slime Corrosivo"],
         Element.NEUTRAL: ["Goblin", "Orc", "Bandido Sombrio"],
     }
 
@@ -34,6 +35,7 @@ class MonsterFactory:
         max_life = 50 + (level * 15)
         attack = 10 + (level * 5)
         speed = 5 + level
+        art = MONSTER_ARTS.get(name, MONSTER_ARTS["DEFAULT"])
 
         description = (
             f"{name} de nível {level}. "
@@ -48,6 +50,7 @@ class MonsterFactory:
             element=element,
             loot=[],  # Can be integrated with ItemFactory later
             description=description,
+            art=art,
         )
 
     @classmethod

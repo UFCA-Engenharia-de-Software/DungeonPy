@@ -30,6 +30,7 @@ class Monster(Entity, DescriptionMixin):
         element: Element,
         loot: list | None = None,
         description: str = "",
+        art: str = "",
     ):
         super().__init__(
             name=name,
@@ -43,6 +44,7 @@ class Monster(Entity, DescriptionMixin):
 
         self.loot = loot or []
         self._description = description
+        self.art = art
 
     @property
     def loot(self) -> list:

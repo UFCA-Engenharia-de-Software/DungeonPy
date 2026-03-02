@@ -1,5 +1,13 @@
 import os
 import msvcrt
+from typing import TYPE_CHECKING
+
+"""
+Para evitar dependência de CLI com domínio e resolver erro F821
+"""
+if TYPE_CHECKING:
+    from src.domain.inventory import Inventory
+    from src.domain.battle import Battle
 
 
 class CLI:
@@ -60,12 +68,12 @@ class CLI:
     def show_main_menu() -> str:
         """Exibe o menu principal com a arte do jogo."""
         arte = r"""
-         ____                                  ____        
-        |  _ \ _   _ _ __   __ _  ___  ___  _ |  _ \ _   _ 
+         ____                                  ____
+        |  _ \ _   _ _ __   __ _  ___  ___  _ |  _ \ _   _
         | | | | | | | '_ \ / _` |/ _ \/ _ \| || |_) | | | |
         | |_| | |_| | | | | (_| |  __/ (_) | ||  __/| |_| |
         |____/ \__,_|_| |_|\__, |\___|\___/|_||_|    \__, |
-                           |___/                     |___/ 
+                           |___/                     |___/
         """
         opcoes = ["Iniciar Nova Jornada", "Sair do Jogo"]
 
@@ -105,11 +113,41 @@ class CLI:
 
     # Menus simples
     @staticmethod
-    def show_game_over() -> None:
+    def show_game_over() -> str:
         """
-        O que faz: Imprime uma tela dramática de derrota
+        Exibe a tela de derrota de forma interativa.
+
+        Retorna:
+            "1" -> Tentar novamente
+            "2" -> Voltar ao menu principal
         """
-        pass
+
+        arte_game_over = r"""
+    ██████   ███████ ███    ███ ███████     ███████ ██    ██ ███████ ██████
+    ██       ██   ██ ████  ████ ██          ██   ██  ██  ██  ██      ██   ██
+    ██   ███ ███████ ██ ████ ██ █████       ██   ██   █  █   █████   ██████
+    ██    ██ ██   ██ ██  ██  ██ ██          ██   ██    ██    ██      ██   ██
+    ██████   ██   ██ ██      ██ ███████     ███████    ██    ███████ ██   ██
+        """
+
+        narrativa = (
+            "\nSeu corpo cai ao chão frio da masmorra...\n"
+            "As sombras se aproximam enquanto sua visão escurece.\n"
+            "\nA princesa continua aguardando por um herói...\n"
+        )
+
+        opcoes = [
+            "Tentar Novamente",
+            "Voltar ao Menu Principal",
+        ]
+
+        escolha_idx = CLI._mostrar_menu_interativo(
+            "VOCÊ FOI DERROTADO...",
+            opcoes,
+            arte_ascii=arte_game_over + narrativa,
+        )
+
+        return "1" if escolha_idx == 0 else "2"
 
     @staticmethod
     def show_victory() -> None:
@@ -262,34 +300,107 @@ class CLI:
                 continue  # Volta pro menu principal
 
     @staticmethod
-    def show_inventory(inventory_summary: dict) -> tuple[str, str] | None:
+    def show_inventory(inventory: "Inventory") -> tuple[object, str] | None:
         """
-        O que faz: Desenha a mochila do jogador de forma interativa. Permite navegar pelos
-                itens e abrir um submenu de ações para o item selecionado. Precisa-se usar o método de mostrar
-                menu interativo para permitir que todos os itens possam ser selecionados pelas setinhas do teclado.
-
-        O que recebe (inventory_summary):
-            O dicionário prontinho gerado pelo método get_items_summary() do Inventory.
-            Ex: {"Poção de Vida": {"quantidade": 2, "peso": 1.0}, "Espada": ...}
-
-        O que devolve:
-            - Uma tupla com duas strings caso o jogador escolha fazer algo:
-            Ex: ("Poção de Vida", "usar") ou ("Espada", "ver_descricao") ou ("Veneno", "descartar")
-            Ou seja, as opções possíveis para itens são: Usar / Equipar, ver_descricao, descartar ou voltar
-            - Retorna `None` caso o jogador olhe o inventário e apenas aperte "Voltar".
-
-        Atenção GameManager: O retorno dessa função deve ser usado em um `if` para acionar
-        os métodos de usar/descartar item reais do Herói!
+        O que faz: Desenha a mochila do jogador de forma interativa.
+        Permite navegar pelos itens e abrir um submenu de ações para o item selecionado.
+        Precisa-se usar o método de mostrar menu interativo para permitir que todos os itens possam ser selecionados pelas setinhas do teclado
+        O que recebe (inventory_summary): O dicionário prontinho gerado pelo método get_items_summary() do Inventory.
+        Ex: {"Poção de Vida": {"quantidade": 2, "peso": 1.0}, "Espada": ...} O que devolve: - Uma tupla com duas strings caso o jogador escolha fazer algo:
+        Ex: ("Poção de Vida", "usar") ou ("Espada", "ver_descricao") ou ("Veneno", "descartar")
+        Ou seja, as opções possíveis para itens são: Usar / Equipar, ver_descricao, descartar ou voltar - Retorna None caso o jogador olhe o inventário e apenas aperte "Voltar".
+        Atenção GameManager: O retorno dessa função deve ser usado em um if para acionar os métodos de usar/descartar item reais do Herói!
         """
-        pass
+
+        if inventory.is_empty():
+            CLI._mostrar_menu_interativo(
+                "INVENTÁRIO",
+                ["Inventário vazio", "Voltar"],
+            )
+            return None
+
+        itens = inventory.items  # cópia segura
+
+        # Cabeçalho de peso
+        peso_atual = inventory.calculate_current_weight()
+        capacidade = inventory.capacity
+
+        arte = f"Peso: {peso_atual:.1f}/{capacidade:.1f}\n\n"
+
+        opcoes = [f"{item.name} (peso: {item.weight})" for item in itens]
+
+        opcoes.append("Voltar")
+
+        escolha = CLI._mostrar_menu_interativo(
+            "MOCHILA DO HERÓI",
+            opcoes,
+            arte_ascii=arte,
+        )
+
+        if escolha == len(opcoes) - 1:
+            return None
+
+        item_escolhido = itens[escolha]
+
+        # Submenu de ações
+        acoes = [
+            "Usar / Equipar",
+            "Descartar",
+            "Voltar",
+        ]
+
+        escolha_acao = CLI._mostrar_menu_interativo(
+            f"AÇÕES — {item_escolhido.name}",
+            acoes,
+        )
+
+        if escolha_acao == 0:
+            return (item_escolhido, "usar")
+        elif escolha_acao == 1:
+            return (item_escolhido, "descartar")
+        else:
+            return None
 
     @staticmethod
-    def display_turn_log(turn_log: dict) -> None:
+    def display_turn_log(battle: "Battle", turn_data: dict) -> None:
         """
-        O que recebe: O dicionário de log que a classe Battle retorna no final de cada turno.
-        O que faz: Imprime a vida/status atual dos lutadores e narra os ataques que aconteceram na lista de actions.
+        Exibe visualmente o resultado de um turno.
         """
-        pass
+
+        CLI._limpar_tela()
+
+        hero = battle.hero
+        monster = battle.monster
+        turn_log = turn_data["turn_log"]
+
+        # Barras de vida
+        barra_hero = CLI._gerar_barra_progresso(hero.current_life, hero.max_life)
+
+        barra_monster = CLI._gerar_barra_progresso(
+            monster.current_life, monster.max_life
+        )
+
+        print("=" * 60)
+        print(f"{f'TURNO {turn_log["turn"]}':^60}")
+        print("=" * 60)
+        print()
+
+        print(f"{hero.name}:   {barra_hero}")
+        print(f"{monster.name}: {barra_monster}")
+
+        print("\nSTATUS ATUAL:")
+        for nome, status in turn_log["status"].items():
+            print(f"- {nome}: {status}")
+
+        print("\nAÇÕES DO TURNO:")
+        for acao in turn_log["actions"]:
+            print(f"• {acao}")
+
+        if turn_log["combat_over"]:
+            print("\n*** COMBATE ENCERRADO ***")
+
+        print("\n" + "=" * 60)
+        input("Pressione ENTER para continuar...")
 
 
 # --- ÁREA DE TESTE ---

@@ -1,5 +1,4 @@
 import os
-import msvcrt
 
 
 class CLI:
@@ -7,6 +6,52 @@ class CLI:
     Classe responsável pela interface visual e interação com o jogador.
     Usa menus interativos com setas do teclado para maior imersão.
     """
+
+    @staticmethod
+    def _ler_tecla() -> str:
+        """
+        Lê a tecla pressionada de forma invisível.
+        Funciona tanto no Windows (msvcrt) quanto no Mac/Linux (tty/termios).
+        Retorna: 'UP', 'DOWN', 'ENTER' ou 'OTHER'
+        """
+        if os.name == "nt":  # Se for Windows
+            import msvcrt
+
+            tecla = msvcrt.getch()
+            if tecla in [b"\xe0", b"\x00"]:  # Setas do teclado no Windows
+                direcao = msvcrt.getch()
+                if direcao == b"H":
+                    return "UP"
+                if direcao == b"P":
+                    return "DOWN"
+            elif tecla == b"\r":  # Enter no Windows
+                return "ENTER"
+            return "OTHER"
+
+        else:  # Se for Mac ou Linux (Unix)
+            import sys
+            import tty
+            import termios
+
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.setraw(sys.stdin.fileno())
+                ch = sys.stdin.read(1)
+
+                if ch == "\x1b":  # Código de escape para setas no Mac/Linux
+                    sys.stdin.read(1)  # Pula o '['
+                    direcao = sys.stdin.read(1)
+                    if direcao == "A":
+                        return "UP"
+                    if direcao == "B":
+                        return "DOWN"
+                elif ch in ["\r", "\n"]:  # Enter no Mac/Linux
+                    return "ENTER"
+                return "OTHER"
+            finally:
+                # Restaura o terminal ao normal, para não bugar o console do professor!
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
     @staticmethod
     def _limpar_tela() -> None:
@@ -44,16 +89,13 @@ class CLI:
             # ---------------------------------------------------------
             # Exatamente a mesma lógica do teste que funcionou!
             # ---------------------------------------------------------
-            tecla = msvcrt.getch()
+            acao = CLI._ler_tecla()
 
-            if tecla in [b"\xe0", b"\x00"]:
-                direcao = msvcrt.getch()
-                if direcao == b"H":  # Seta para CIMA
-                    indice_atual = (indice_atual - 1) % len(opcoes)
-                elif direcao == b"P":  # Seta para BAIXO
-                    indice_atual = (indice_atual + 1) % len(opcoes)
-
-            elif tecla == b"\r":  # APENAS o \r, sem o \n que estava causando o bug!
+            if acao == "UP":
+                indice_atual = (indice_atual - 1) % len(opcoes)
+            elif acao == "DOWN":
+                indice_atual = (indice_atual + 1) % len(opcoes)
+            elif acao == "ENTER":
                 return indice_atual
 
     @staticmethod
@@ -92,6 +134,7 @@ class CLI:
         opcoes_classe = [
             "Guerreiro (Especialista em combate corpo a corpo e escudos)",
             "Arqueiro  (Rápido, letal e ataca à distância)",
+            "Mago      (Especialista em magias e poder explosivo)",
         ]
 
         escolha_idx = CLI._mostrar_menu_interativo(
@@ -142,11 +185,238 @@ class CLI:
         return "1" if escolha_idx == 0 else "2"
 
     @staticmethod
-    def show_victory() -> None:
+    def _imprimir_lento(texto: str, atraso: float = 0.05) -> None:
         """
-        O que faz: Imprime tela gloriosa de vitória.
+        Gera o efeito de máquina de escrever (RPG clássico).
         """
-        pass
+        import sys
+        import time
+
+        for char in texto:
+            sys.stdout.write(char)
+            sys.stdout.flush()
+            time.sleep(atraso)
+        print()  # Quebra a linha no final
+
+    @staticmethod
+    def show_victory(hero_name: str) -> None:
+        """
+        Exibe o final narrativo e melancólico do jogo, seguido pelos créditos.
+        """
+        import time
+
+        CLI._limpar_tela()
+        print("=" * 60)
+        print(f"{' A ÚLTIMA SALA ':^60}")
+        print("=" * 60 + "\n")
+
+        # ROTEIRO DA CUTSCENE FINAL
+        # O atraso é ajustado para dar o ritmo. Textos do narrador são um pouco mais lentos.
+
+        CLI._imprimir_lento(
+            "Narrador: O Herói adentra a uma pequena sala. Ao longe, ele avista a princesa.",
+            0.04,
+        )
+        CLI._imprimir_lento(
+            "Narrador: Seu corpo parecia estar intacto, mas o silêncio do lugar era ensurdecedor...",
+            0.06,
+        )
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        CLI._imprimir_lento(
+            f"{hero_name}: Eu... eu finalmente cheguei... depois de tanto tempo...",
+            0.05,
+        )
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        CLI._imprimir_lento(
+            "Narrador: Ele se aproxima, tentando chamá-la de longe. Mas quanto mais perto chegava,",
+            0.04,
+        )
+        CLI._imprimir_lento(
+            "Narrador: mais o frio da sala o consumia. Ele se ajoelha próximo ao seu rosto.",
+            0.05,
+        )
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        CLI._imprimir_lento(
+            f"{hero_name}: Ei, princesa... eu sei que você está bem, não tá?", 0.06
+        )
+        time.sleep(1)  # Pausa dramática automática
+        CLI._imprimir_lento(
+            "Narrador: Os olhos dela estavam fechados. O herói estava cansado demais para raciocinar.",
+            0.05,
+        )
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        CLI._imprimir_lento(
+            f"{hero_name}: Ei, por favor, acorda... acorda, por favor.", 0.05
+        )
+        CLI._imprimir_lento("Eu não posso... não posso voltar sem você.", 0.07)
+        time.sleep(1)
+        CLI._imprimir_lento(
+            "Narrador: O desespero tomou conta. Ele tocou sua mão, mas nada acontecia.",
+            0.06,
+        )
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        # O Monólogo Final
+        CLI._imprimir_lento(f"{hero_name}: Você não pode ter... por favor, não.", 0.06)
+        time.sleep(0.5)
+        CLI._imprimir_lento("Você é forte. É a mais forte que eu conheço.", 0.05)
+        time.sleep(0.5)
+        CLI._imprimir_lento(
+            "Lembra de quando brincávamos? Você sempre foi a durona...", 0.05
+        )
+        CLI._imprimir_lento("Sempre sabia o que me dizer quando eu estava mal.", 0.05)
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        CLI._imprimir_lento(
+            f"{hero_name}: Sempre ajudou todo mundo...até alguém como eu... não importa o que falassem,",
+            0.05,
+        )
+        CLI._imprimir_lento(
+            "ou o que diziam sobre mim. Você nunca deixou as pessoas tirarem de você o que você era,",
+            0.05,
+        )
+        CLI._imprimir_lento(
+            "não importa o quão difícil fosse, o quanto zombavam, você nunca deixou de ajudar aos outros, de me ajudar.",
+            0.05,
+        )
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        CLI._imprimir_lento(
+            f"{hero_name}: Eu deveria ter ficado mais tempo com você...", 0.07
+        )
+        CLI._imprimir_lento("Não deveria ter me afastado...", 0.07)
+        CLI._imprimir_lento("Não deveria ter te deixado sozinha...", 0.08)
+        time.sleep(1)
+
+        CLI._imprimir_lento(
+            f"{hero_name}: Talvez... a força que eu ganhei para chegar até aqui", 0.05
+        )
+        CLI._imprimir_lento("tenha vindo de você.", 0.06)
+        time.sleep(1)
+        CLI._imprimir_lento(
+            f"{hero_name}: Então... por favor... não me deixe agora.", 0.1
+        )  # Bem lento para o impacto final
+
+        print("\n[Pressione ENTER]")
+        CLI._ler_tecla()
+        print("-" * 60 + "\n")
+
+        time.sleep(3)  # Pausa longa antes de escurecer a tela
+
+        # ==========================================
+        # TELA DE CRÉDITOS
+        # ==========================================
+        CLI._limpar_tela()
+        time.sleep(1)
+
+        print("\n\n\n")
+        print(" F I M ".center(60))
+        time.sleep(3)
+
+        CLI._limpar_tela()
+
+        # Aqui no futuro você pode dar o play na música triste!
+
+        print("=" * 60)
+        print(f"{' CRÉDITOS - DUNGEONPY ':^60}")
+        print("=" * 60 + "\n")
+
+        time.sleep(0.5)
+        print("DESENVOLVIDO POR:".center(60))
+        print("Alan Mendes Vieira".center(60))
+        print("Cicero Jesus Da Silva Gomes".center(60))
+        print("Leôncio Ferreira Flores Neto".center(60))
+        print("Paulo Gabriel Leite Landim".center(60))
+        print("Salomão Rodrigues Silva".center(60))
+
+        time.sleep(0.5)
+        print("\n\n" + "UNIVERSIDADE FEDERAL DO CARIRI (UFCA)".center(60))
+        print("Disciplina de Programação Orientada a Objetos".center(60))
+        print("Professor(a): [Jayr Alencar Pereira]".center(60))
+
+        print("\n" + "=" * 60)
+        print(" OBRIGADO POR JOGAR DUNGEONPY!".center(60, "*"))
+        print("=" * 60)
+
+        print("\n" + "[Pressione ENTER para voltar ao Menu Principal]".center(60))
+
+        # Usamos o leitor multiplataforma para esperar a ação do jogador
+        CLI._ler_tecla()
+
+    @staticmethod
+    def show_battle_reward(
+        monster_name: str,
+        dropped_items: list[str],
+        missed_items: list[str] = None,
+        leveled_up: bool = False,
+    ) -> None:
+        """
+        O que faz: Exibe a tela de vitória após derrotar um monstro, mostrando os espólios (loot) e XP.
+
+        O que recebe:
+            - monster_name (str): O nome do monstro derrotado.
+            - dropped_items (list[str]): Uma lista apenas com os NOMES dos itens (Ex: ["Poção de Cura", "Adaga"]).
+            - leveled_up (bool): Passar True se o herói subiu de nível nessa luta.
+        """
+        CLI._limpar_tela()
+
+        print("=" * 60)
+        print(f"{'VITÓRIA EM BATALHA!':^60}")
+        print("=" * 60)
+
+        print(f"\nO terrível {monster_name} foi derrotado!\n".center(60))
+
+        # Efeito visual caso o jogador tenha subido de nível
+        if leveled_up:
+            print("🌟 LEVEL UP! VOCÊ FICOU MAIS FORTE! 🌟".center(60))
+            print()
+
+        print(" RECOMPENSAS ".center(60, "-"))
+
+        # Verifica se o monstro dropou algo ou não
+        if dropped_items:
+            print("  • Itens recolhidos:")
+            for item in dropped_items:
+                print(f"      + {item}")
+        elif not dropped_items and not missed_items:
+            print("  • Itens: Os bolsos do monstro estavam vazios.")
+
+        if missed_items:
+            print("\n  ⚠️ AVISO: SUA MOCHILA ESTÁ MUITO PESADA, BURRÃO HEIN! ⚠️")
+            print("  Você precisou deixar os seguintes itens para trás:")
+            for item in missed_items:
+                print(f"      - {item} (Perdido nas sombras)")
+
+        print("-" * 60)
+
+        # Pausa a tela até o jogador ler os espólios e apertar Enter
+        print("\n" + "[Pressione ENTER para continuar a exploração]".center(60))
+        CLI._ler_tecla()  # Usamos aquele nosso leitor multiplataforma para pausar!
 
     @staticmethod
     def show_hero_status(status_dict: dict) -> None:
@@ -426,37 +696,70 @@ if __name__ == "__main__":
 
         # Informações para conseguir inicializar o menu de combate sem precisar importar as classes do projeto
         # 1. Criamos um dicionário de ataques falso, simulando o que o Herói enviaria
-        ataques_falsos = {
-            "1": {"description": "Flecha de Fogo", "damage": 10},
-            "2": {"description": "Tiro Preciso", "damage": 15},
-            "3": {"description": "Chuva de Flechas", "damage": 20},
-        }
 
-        # 2. Uma arte de monstro temporária
-        slime_art = r"""
-          ______
-        /        \
-       /  O    O  \
-      |    \__/    |
-       \__________/
-    """
+        CLI.show_victory(nome_heroi)
 
-        # 3. Chamamos o método de combate
-        # Note que passamos dados manuais para simular o estado do jogo
-        escolha = CLI.get_combat_choice(
-            acoes_do_heroi=ataques_falsos,
-            nome_heroi="Paulo Gabriel",
-            nivel_heroi=5,
-            hp_atual=50,
-            hp_max=100,
-            arte_monstro=slime_art,
-            nome_monstro="Slime Azul",
+        CLI.show_battle_reward(
+            monster_name="irineu", dropped_items=[], missed_items=None, leveled_up=True
         )
 
-        # 4. Resultado do teste
-
         CLI._limpar_tela()
-        print(f"O teste funcionou! O 'Battle' receberia a chave: {escolha}")
+
+        # ---------------------------------------------------------
+        # TESTE 1: LOG DE TURNO (display_turn_log)
+        # ---------------------------------------------------------
+        # O GameManager/Battle vai extrair os dados reais e passar assim:
+        CLI.display_turn_log(
+            turn_number=3,
+            hero_name=nome_heroi,
+            hero_hp=35,
+            hero_max_hp=50,
+            monster_name="Rei Goblin",
+            monster_hp=12,
+            monster_max_hp=80,
+            actions=[
+                f"{nome_heroi} usou Golpe Certeiro e causou 15 de dano!",
+                "Rei Goblin tentou revidar, mas errou o ataque!",
+            ],
+            status={
+                "Rei Goblin": "Sangrando (perde 2 HP por turno)",
+                nome_heroi: "Focado (+10% de acerto)",
+            },
+        )
+
+        # ---------------------------------------------------------
+        # TESTE 2: MENU DE INVENTÁRIO (show_inventory)
+        # ---------------------------------------------------------
+        # O GameManager vai pedir o dicionário pro Inventory e mandar pra CLI assim:
+        mochila_falsa = {
+            "current_weight": 3.5,
+            "capacity": 15.0,
+            "items": [
+                {"name": "Poção de Vida Menor", "weight": 0.5},
+                {"name": "Espada Longa Enferrujada", "weight": 2.0},
+                {"name": "Amuleto do Rato", "weight": 1.0},
+            ],
+        }
+
+        escolha_inventario = CLI.show_inventory(mochila_falsa)
+
+        # ---------------------------------------------------------
+        # RESULTADOS DOS TESTES
+        # ---------------------------------------------------------
+        CLI._limpar_tela()
+        print("=" * 60)
+        print(f"{'RESULTADO DOS TESTES':^60}")
+        print("=" * 60)
+
+        if escolha_inventario:
+            item, acao = escolha_inventario
+            print(f"\nO jogador decidiu {acao.upper()} o item: {item}")
+        else:
+            print("\nO jogador apenas olhou a mochila e apertou 'Voltar'.")
+
+        print("\nTudo funcionando perfeitamente! Pode integrar com o GameManager.")
+        CLI._limpar_tela()
+        CLI.show_game_over()
 
     else:
         CLI._limpar_tela()

@@ -1,13 +1,5 @@
 import os
 import msvcrt
-from typing import TYPE_CHECKING
-
-"""
-Para evitar dependência de CLI com domínio e resolver erro F821
-"""
-if TYPE_CHECKING:
-    from src.domain.inventory import Inventory
-    from src.domain.battle import Battle
 
 
 class CLI:
@@ -300,107 +292,120 @@ class CLI:
                 continue  # Volta pro menu principal
 
     @staticmethod
-    def show_inventory(inventory: "Inventory") -> tuple[object, str] | None:
+    def show_inventory(inventory_summary: dict) -> tuple[str, str] | None:
         """
-        O que faz: Desenha a mochila do jogador de forma interativa.
-        Permite navegar pelos itens e abrir um submenu de ações para o item selecionado.
-        Precisa-se usar o método de mostrar menu interativo para permitir que todos os itens possam ser selecionados pelas setinhas do teclado
-        O que recebe (inventory_summary): O dicionário prontinho gerado pelo método get_items_summary() do Inventory.
-        Ex: {"Poção de Vida": {"quantidade": 2, "peso": 1.0}, "Espada": ...} O que devolve: - Uma tupla com duas strings caso o jogador escolha fazer algo:
-        Ex: ("Poção de Vida", "usar") ou ("Espada", "ver_descricao") ou ("Veneno", "descartar")
-        Ou seja, as opções possíveis para itens são: Usar / Equipar, ver_descricao, descartar ou voltar - Retorna None caso o jogador olhe o inventário e apenas aperte "Voltar".
-        Atenção GameManager: O retorno dessa função deve ser usado em um if para acionar os métodos de usar/descartar item reais do Herói!
+        Exibe o inventário de forma interativa usando o menu padrão da CLI.
+
+        Recebe:
+            inventory_summary: dict retornado por Inventory.get_items_summary()
+
+        Retorna:
+            (item_name, action) ou None
         """
 
-        if inventory.is_empty():
-            CLI._mostrar_menu_interativo(
-                "INVENTÁRIO",
-                ["Inventário vazio", "Voltar"],
-            )
+        items = inventory_summary["items"]
+
+        # Caso inventário vazio
+        if not items:
+            print("\n" + "=" * 60)
+            print(f"{'INVENTÁRIO':^60}")
+            print("=" * 60)
+            print("\nInventário vazio.")
+            input("\nPressione Enter para voltar...")
             return None
 
-        itens = inventory.items  # cópia segura
+        # ===== MENU PRINCIPAL DO INVENTÁRIO =====
 
-        # Cabeçalho de peso
-        peso_atual = inventory.calculate_current_weight()
-        capacidade = inventory.capacity
-
-        arte = f"Peso: {peso_atual:.1f}/{capacidade:.1f}\n\n"
-
-        opcoes = [f"{item.name} (peso: {item.weight})" for item in itens]
-
-        opcoes.append("Voltar")
-
-        escolha = CLI._mostrar_menu_interativo(
-            "MOCHILA DO HERÓI",
-            opcoes,
-            arte_ascii=arte,
+        header = (
+            f"Peso: "
+            f"{inventory_summary['current_weight']:.1f}/"
+            f"{inventory_summary['capacity']:.1f}"
         )
 
-        if escolha == len(opcoes) - 1:
+        options = [f"{item['name']} (peso: {item['weight']})" for item in items]
+
+        options.append("Voltar")
+
+        selected_index = CLI._mostrar_menu_interativo(
+            titulo=f"INVENTÁRIO\n{header}",
+            opcoes=options,
+        )
+
+        # Se escolheu Voltar
+        if selected_index == len(options) - 1:
             return None
 
-        item_escolhido = itens[escolha]
+        selected_item = items[selected_index]
+        item_name = selected_item["name"]
 
-        # Submenu de ações
-        acoes = [
+        # ===== SUBMENU DE AÇÕES =====
+
+        action_options = [
             "Usar / Equipar",
+            "Ver descrição",
             "Descartar",
             "Voltar",
         ]
 
-        escolha_acao = CLI._mostrar_menu_interativo(
-            f"AÇÕES — {item_escolhido.name}",
-            acoes,
+        action_index = CLI._mostrar_menu_interativo(
+            titulo=f"AÇÕES - {item_name}",
+            opcoes=action_options,
         )
 
-        if escolha_acao == 0:
-            return (item_escolhido, "usar")
-        elif escolha_acao == 1:
-            return (item_escolhido, "descartar")
-        else:
+        if action_index == 3:
             return None
 
+        action_map = {
+            0: "usar",
+            1: "ver_descricao",
+            2: "descartar",
+        }
+
+        return (item_name, action_map[action_index])
+
     @staticmethod
-    def display_turn_log(battle: "Battle", turn_data: dict) -> None:
+    def display_turn_log(
+        turn_number: int,
+        hero_name: str,
+        hero_hp: int,
+        hero_max_hp: int,
+        monster_name: str,
+        monster_hp: int,
+        monster_max_hp: int,
+        actions: list[str],
+        status: dict[str, str],
+    ) -> None:
         """
-        Exibe visualmente o resultado de um turno.
+        Exibe o resumo visual de um turno de combate.
         """
-
-        CLI._limpar_tela()
-
-        hero = battle.hero
-        monster = battle.monster
-        turn_log = turn_data["turn_log"]
-
-        # Barras de vida
-        barra_hero = CLI._gerar_barra_progresso(hero.current_life, hero.max_life)
-
-        barra_monster = CLI._gerar_barra_progresso(
-            monster.current_life, monster.max_life
-        )
-
-        print("=" * 60)
-        print(f"{f'TURNO {turn_log["turn"]}':^60}")
-        print("=" * 60)
-        print()
-
-        print(f"{hero.name}:   {barra_hero}")
-        print(f"{monster.name}: {barra_monster}")
-
-        print("\nSTATUS ATUAL:")
-        for nome, status in turn_log["status"].items():
-            print(f"- {nome}: {status}")
-
-        print("\nAÇÕES DO TURNO:")
-        for acao in turn_log["actions"]:
-            print(f"• {acao}")
-
-        if turn_log["combat_over"]:
-            print("\n*** COMBATE ENCERRADO ***")
 
         print("\n" + "=" * 60)
-        input("Pressione ENTER para continuar...")
+        print(f"{f'TURNO {turn_number}':^60}")
+        print("=" * 60)
+
+        # Subtitle estilo inventário
+        subtitle = (
+            f"{hero_name}: {hero_hp}/{hero_max_hp} HP"
+            f"   |   "
+            f"{monster_name}: {monster_hp}/{monster_max_hp} HP"
+        )
+        print(f"{subtitle:^60}")
+        print("-" * 60)
+
+        # Status
+        if status:
+            print("\nStatus:")
+            for entity_name, state in status.items():
+                print(f"  {entity_name} → {state}")
+
+        # Ações
+        if actions:
+            print("\nAções:")
+            for action in actions:
+                print(f"  {action}")
+
+        print("\n" + "=" * 60)
+        input("\nPressione Enter para continuar...")
 
 
 # --- ÁREA DE TESTE ---

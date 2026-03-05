@@ -2,6 +2,7 @@ import pytest
 from domain.element import Element
 from domain.ranged_weapon import RangedWeapon
 from unittest.mock import patch
+from domain.weapon import Weapon
 from domain.archer import Archer
 from domain.monster import Monster
 
@@ -30,6 +31,34 @@ def test_reset_dodge():
 
     archer_generic.reset_dodge()
     assert archer_generic.dodge is False
+
+
+def test_ultimate():
+    jotinha = Archer(
+        name="tiro_pá_mim_é_muito",
+        max_life=200,
+        current_life=100,
+        attack=20,
+        speed=30,
+        max_ammo=10,
+        current_ammo=10,
+    )
+
+    monstrin = Monster(
+        name="Fire Dragon",
+        max_life=100,
+        attack=25,
+        speed=10,
+        element=Element.FIRE,
+        loot=["Dragon Scale"],
+        description="A fierce dragon",
+    )
+
+    jotinha.ultimate(monstrin)
+
+    assert jotinha.current_life == 90
+    assert jotinha.current_ammo == 7
+    assert monstrin.current_life == 36
 
 
 def test_reload():
@@ -102,7 +131,7 @@ def test_get_actions():
     )
     assert archer_generic.get_actions() == {
         "1": {
-            "description": "Atirar (Ataque básico com arma)",
+            "description": "Atirar (Ataque básico com arma, gasta 1 flecha)",
             "method": archer_generic.strike,
         },
         "2": {
@@ -112,6 +141,10 @@ def test_get_actions():
         "3": {
             "description": "Recarregar (recarrega a munição)",
             "method": archer_generic.reload,
+        },
+        "4": {
+            "description": "Tiro Triplo (Gasta 3 flechas, se dá 10 de dano, mas inflige muito dano)",
+            "method": archer_generic.ultimate,
         },
     }
 
@@ -179,7 +212,7 @@ def test_strike_is_aiming_buff():
         description="A fierce dragon",
     )
     arco = RangedWeapon(name="Arco Teste", base_damage=10, ammo_required=1)
-    arqueirin.equipped_weapon = arco
+    arqueirin.equip_weapon(arco)
 
     arqueirin.aim()
     arqueirin.strike(monstrin)
@@ -272,24 +305,6 @@ def test_dodge():
         )
 
 
-def test_equipped_weapon():
-    with pytest.raises(TypeError):
-        arqueirozin = Archer(
-            name="gavião_do_grau",
-            max_life=200,
-            current_life=100,
-            attack=20,
-            speed=30,
-            equipped_weapon="3oitão",
-        )
-
-    # Testing if equipped weapon can be None
-    arqueirozin = Archer(
-        name="gavião_do_grau", max_life=200, current_life=100, attack=20, speed=30
-    )
-    assert arqueirozin.equipped_weapon is None
-
-
 def test_is_aiming():
     with pytest.raises(TypeError):
         Archer(
@@ -299,4 +314,20 @@ def test_is_aiming():
             attack=20,
             speed=30,
             is_aiming="ovo_atirar",
+        )
+
+
+def test_equip_weapon_type_erro():
+    arco_fake = Weapon(name="Arco Teste", base_damage=10)
+
+    with pytest.raises(TypeError):
+        Archer(
+            name="tiro_pá_mim_é_muito",
+            max_life=200,
+            current_life=100,
+            attack=20,
+            speed=30,
+            max_ammo=10,
+            current_ammo=10,
+            equipped_weapon=arco_fake,
         )

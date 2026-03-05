@@ -100,19 +100,29 @@ class CLI:
 
     @staticmethod
     def show_main_menu() -> str:
-        """Exibe o menu principal com a arte do jogo."""
+        """Exibe o menu principal com a arte do jogo e subtítulo."""
+
         arte = r"""
-         ____                                  ____
-        |  _ \ _   _ _ __   __ _  ___  ___  _ |  _ \ _   _
-        | | | | | | | '_ \ / _` |/ _ \/ _ \| || |_) | | | |
-        | |_| | |_| | | | | (_| |  __/ (_) | ||  __/| |_| |
-        |____/ \__,_|_| |_|\__, |\___|\___/|_||_|    \__, |
-                           |___/                     |___/
+                                                             
+▄▄▄▄▄▄                                       ▄▄▄▄▄▄▄         
+███▀▀██▄                                     ███▀▀███▄       
+███  ███ ██ ██ ████▄ ▄████ ▄█▀█▄ ▄███▄ ████▄ ███▄▄███▀ ██ ██ 
+███  ███ ██ ██ ██ ██ ██ ██ ██▄█▀ ██ ██ ██ ██ ███▀▀▀▀   ██▄██ 
+██████▀  ▀██▀█ ██ ██ ▀████ ▀█▄▄▄ ▀███▀ ██ ██ ███        ▀██▀ 
+                        ██                               ██  
+                      ▀▀▀                              ▀▀▀   
         """
+
+        # Adicionando vida ao menu: Subtítulo, decoração e versão
+        subtitulo = "  Uma jornada de sombras, escolhas e perdas ".center(60)
+        versao = "v1.0.0".rjust(58)  # Fica alinhado à direita
+
+        arte_completa = f"{arte}\n{subtitulo}\n\n{versao}\n"
+
         opcoes = ["Iniciar Nova Jornada", "Sair do Jogo"]
 
         escolha_idx = CLI._mostrar_menu_interativo(
-            "MENU PRINCIPAL", opcoes, arte_ascii=arte
+            "M E N U   P R I N C I P A L", opcoes, arte_ascii=arte_completa
         )
 
         return "1" if escolha_idx == 0 else "2"
@@ -120,16 +130,39 @@ class CLI:
     @staticmethod
     def ask_hero_info() -> tuple[str, str]:
         """Guia o jogador na criação do personagem."""
+
+        """Guia o jogador na criação do personagem com imersão e arte."""
+        import time
+
         CLI._limpar_tela()
         print("=" * 60)
-        print(f"{'CRIAÇÃO DE PERSONAGEM':^60}")
+        print(f"{' O DESPERTAR ':^60}")
         print("=" * 60 + "\n")
+
+        # Um pequeno toque de RPG de mesa antes de pedir o nome
+        print("Uma voz antiga e cansada ecoa na escuridão da sua mente...\n")
+        time.sleep(1)
 
         name = ""
         while not name:
-            name = input("Qual o nome do seu Herói? ").strip().title()
+            name = (
+                input("— Diga-me, alma errante... qual é o seu nome? \n> ")
+                .strip()
+                .title()
+            )
             if not name:
-                print("O nome não pode ficar em branco!\n")
+                print("— Não tenha medo. Fale seu nome...\n")
+
+        # Arte das 3 armas lado a lado (Pure ASCII para não bugar)
+        arte_classes = r"""
+      [ GUERREIRO ]          [ ARQUEIRO ]            [ MAGO ]
+        
+        o==}=====>             >>--->                   S2
+        
+       Vida:  150            Vida:  100             Vida:   80
+       Ataque: 30            Ataque: 35             Ataque: 50
+       Veloc:  10            Veloc:  25             Veloc:  15
+        """
 
         opcoes_classe = [
             "Guerreiro (Especialista em combate corpo a corpo e escudos)",
@@ -137,13 +170,16 @@ class CLI:
             "Mago      (Especialista em magias e poder explosivo)",
         ]
 
+        # Passamos a arte_classes para o nosso motor de menu interativo
         escolha_idx = CLI._mostrar_menu_interativo(
-            f"Saudações, {name}! Escolha sua vocação:", opcoes_classe
+            f"Saudações, {name}... Qual caminho você trilhou?",
+            opcoes_classe,
+            arte_ascii=arte_classes,
         )
 
-        class_choice = "1" if escolha_idx == 0 else "2"
+        # Mapeia o índice (0, 1, 2) para a string correta ("1", "2", "3")
+        class_choice = str(escolha_idx + 1)
 
-        # O retorno name vai ser usado na variável nome_heroi na parte de combate e a class_choice para a escolha da classe
         return name, class_choice
 
     # Menus simples
@@ -205,128 +241,151 @@ class CLI:
         """
         import time
 
+        # Âncora visual triste para a sala
+        arte_vela = r"""
+               (  
+              ) ) 
+             ( (  
+              |   
+           .--|--.
+          /       \ 
+         |_________|
+        """
+
+        def _tocar_cena(linhas: list[tuple[str, float]]) -> None:
+            """Função interna para desenhar a tela limpa a cada cena."""
+            CLI._limpar_tela()
+            print("=" * 60)
+            print(f"{' A ÚLTIMA SALA ':^60}")
+            print("=" * 60)
+            print(arte_vela)
+            print("\n")
+
+            for texto, atraso in linhas:
+                CLI._imprimir_lento(texto, atraso)
+
+            print("\n" + "[...]".center(60))
+            CLI._ler_tecla()
+
+        # ==========================================
+        # ROTEIRO DA CUTSCENE FINAL (Dividido em Atos)
+        # ==========================================
+
+        # Ato 1: A Chegada
+        _tocar_cena(
+            [
+                (
+                    "Narrador: O Herói adentra a uma pequena sala. Ao longe, ele avista a princesa.",
+                    0.04,
+                ),
+                (
+                    "Narrador: Seu corpo parecia estar intacto, mas o silêncio do lugar era ensurdecedor...",
+                    0.06,
+                ),
+                (
+                    f"{hero_name}: Eu... eu finalmente cheguei... depois de tanto tempo...",
+                    0.05,
+                ),
+            ]
+        )
+
+        # Ato 2: A Descoberta
+        _tocar_cena(
+            [
+                (
+                    "Narrador: Ele se aproxima, tentando chamá-la de longe. Mas quanto mais perto chegava,",
+                    0.04,
+                ),
+                (
+                    "Narrador: mais o frio da sala o consumia. Ele se ajoelha próximo ao seu rosto.",
+                    0.05,
+                ),
+                (
+                    f"{hero_name}: Ei, princesa... eu sei que você está bem, não tá?",
+                    0.06,
+                ),
+            ]
+        )
+
+        # Ato 3: O Desespero
+        _tocar_cena(
+            [
+                (
+                    "Narrador: Os olhos dela estavam fechados. O herói estava cansado demais para raciocinar.",
+                    0.05,
+                ),
+                (f"{hero_name}: Ei, por favor, acorda... acorda, por favor.", 0.05),
+                (f"{hero_name}: Eu não posso... não posso voltar sem você.", 0.07),
+                (
+                    "Narrador: O desespero tomou conta. Ele tocou sua mão, mas nada acontecia.",
+                    0.06,
+                ),
+            ]
+        )
+
+        # Ato 4: As Memórias
+        _tocar_cena(
+            [
+                (f"{hero_name}: Você não pode ter... por favor, não.", 0.06),
+                (f"{hero_name}: Você é forte. É a mais forte que eu conheço.", 0.05),
+                (
+                    f"{hero_name}: Lembra de quando brincávamos? Você sempre foi a durona...",
+                    0.05,
+                ),
+                (
+                    f"{hero_name}: Sempre sabia o que me dizer quando eu estava mal.",
+                    0.05,
+                ),
+            ]
+        )
+
+        # Ato 5: A Declaração
+        _tocar_cena(
+            [
+                (
+                    f"{hero_name}: Sempre ajudou todo mundo...até alguém como eu... não importa o que falassem,",
+                    0.05,
+                ),
+                (
+                    f"{hero_name}: ou o que diziam sobre mim. Você nunca deixou as pessoas tirarem de você o que você era,",
+                    0.05,
+                ),
+                (
+                    f"{hero_name}: não importa o quão difícil fosse, o quanto zombavam,",
+                    0.05,
+                ),
+                (
+                    f"{hero_name}: você nunca deixou de ajudar aos outros, de me ajudar.",
+                    0.05,
+                ),
+            ]
+        )
+
+        # Ato 6: A Despedida
+        _tocar_cena(
+            [
+                (f"{hero_name}: Eu deveria ter ficado mais tempo com você...", 0.07),
+                (f"{hero_name}: Não deveria ter me afastado...", 0.07),
+                (f"{hero_name}: Não deveria ter te deixado sozinha...", 0.08),
+                (
+                    f"{hero_name}: Talvez... a força que eu ganhei para chegar até aqui",
+                    0.05,
+                ),
+                (f"{hero_name}: tenha vindo de você.", 0.06),
+            ]
+        )
+
+        # Ato 7: O Fim (Única cena sem o ler_tecla no loop, tratado manualmente)
         CLI._limpar_tela()
         print("=" * 60)
         print(f"{' A ÚLTIMA SALA ':^60}")
-        print("=" * 60 + "\n")
-
-        # ROTEIRO DA CUTSCENE FINAL
-        # O atraso é ajustado para dar o ritmo. Textos do narrador são um pouco mais lentos.
-
-        CLI._imprimir_lento(
-            "Narrador: O Herói adentra a uma pequena sala. Ao longe, ele avista a princesa.",
-            0.04,
-        )
-        CLI._imprimir_lento(
-            "Narrador: Seu corpo parecia estar intacto, mas o silêncio do lugar era ensurdecedor...",
-            0.06,
-        )
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        CLI._imprimir_lento(
-            f"{hero_name}: Eu... eu finalmente cheguei... depois de tanto tempo...",
-            0.05,
-        )
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        CLI._imprimir_lento(
-            "Narrador: Ele se aproxima, tentando chamá-la de longe. Mas quanto mais perto chegava,",
-            0.04,
-        )
-        CLI._imprimir_lento(
-            "Narrador: mais o frio da sala o consumia. Ele se ajoelha próximo ao seu rosto.",
-            0.05,
-        )
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        CLI._imprimir_lento(
-            f"{hero_name}: Ei, princesa... eu sei que você está bem, não tá?", 0.06
-        )
-        time.sleep(1)  # Pausa dramática automática
-        CLI._imprimir_lento(
-            "Narrador: Os olhos dela estavam fechados. O herói estava cansado demais para raciocinar.",
-            0.05,
-        )
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        CLI._imprimir_lento(
-            f"{hero_name}: Ei, por favor, acorda... acorda, por favor.", 0.05
-        )
-        CLI._imprimir_lento("Eu não posso... não posso voltar sem você.", 0.07)
-        time.sleep(1)
-        CLI._imprimir_lento(
-            "Narrador: O desespero tomou conta. Ele tocou sua mão, mas nada acontecia.",
-            0.06,
-        )
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        # O Monólogo Final
-        CLI._imprimir_lento(f"{hero_name}: Você não pode ter... por favor, não.", 0.06)
-        time.sleep(0.5)
-        CLI._imprimir_lento("Você é forte. É a mais forte que eu conheço.", 0.05)
-        time.sleep(0.5)
-        CLI._imprimir_lento(
-            "Lembra de quando brincávamos? Você sempre foi a durona...", 0.05
-        )
-        CLI._imprimir_lento("Sempre sabia o que me dizer quando eu estava mal.", 0.05)
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        CLI._imprimir_lento(
-            f"{hero_name}: Sempre ajudou todo mundo...até alguém como eu... não importa o que falassem,",
-            0.05,
-        )
-        CLI._imprimir_lento(
-            "ou o que diziam sobre mim. Você nunca deixou as pessoas tirarem de você o que você era,",
-            0.05,
-        )
-        CLI._imprimir_lento(
-            "não importa o quão difícil fosse, o quanto zombavam, você nunca deixou de ajudar aos outros, de me ajudar.",
-            0.05,
-        )
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        CLI._imprimir_lento(
-            f"{hero_name}: Eu deveria ter ficado mais tempo com você...", 0.07
-        )
-        CLI._imprimir_lento("Não deveria ter me afastado...", 0.07)
-        CLI._imprimir_lento("Não deveria ter te deixado sozinha...", 0.08)
-        time.sleep(1)
-
-        CLI._imprimir_lento(
-            f"{hero_name}: Talvez... a força que eu ganhei para chegar até aqui", 0.05
-        )
-        CLI._imprimir_lento("tenha vindo de você.", 0.06)
-        time.sleep(1)
+        print("=" * 60)
+        print(arte_vela)
+        print("\n\n")
         CLI._imprimir_lento(
             f"{hero_name}: Então... por favor... não me deixe agora.", 0.1
-        )  # Bem lento para o impacto final
-
-        print("\n[Pressione ENTER]")
-        CLI._ler_tecla()
-        print("-" * 60 + "\n")
-
-        time.sleep(3)  # Pausa longa antes de escurecer a tela
+        )
+        time.sleep(3)  # Pausa longa dramática no escuro
 
         # ==========================================
         # TELA DE CRÉDITOS

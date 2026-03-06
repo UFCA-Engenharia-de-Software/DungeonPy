@@ -88,3 +88,19 @@ class Hero(Entity):
         Mapping of action keys to action details.
         """
         pass
+
+    def get_hero_status(self) -> dict:
+        """
+        Return a dict with all hero status.
+        """
+        weapon_name = self._equipped_weapon.name if self._equipped_weapon else "Nenhuma"
+
+        return {
+            "name": self.name,
+            "current_life": self.current_life,
+            "max_life": self.max_life,
+            "attack": self.attack,
+            "speed": self.speed,
+            "element": self.element.value,
+            "equipped_weapon": weapon_name,
+        }

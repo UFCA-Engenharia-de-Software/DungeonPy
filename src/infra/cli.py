@@ -1,4 +1,6 @@
 import os
+import sys
+import time
 
 
 class Color:
@@ -281,7 +283,6 @@ class CLI:
         Create the effect of typewriter
         If Player press ENTER, jump the effect and print the whole line
         """
-        import sys
         import time
         import os
 
@@ -623,10 +624,47 @@ class CLI:
         """
         O que recebe: Um dicionário com todos os status atuais do herói.
         O que faz: Imprime a "Ficha de Personagem" completa e espera uma tecla para voltar.
-        Precisa imprimir a ficha bem formatada mostrando os status: "Nome, Vida atual em relação a máxima, ataque, velocidade, e arma atual equipada."
-        Para isso, é necessário criar um dict na classe hero, por isso, esse método será opcional e implementado apenas se sobrar tempo
+        Mostra os status: "Nome, Vida atual em relação a máxima, ataque, velocidade, e arma atual equipada."
         """
-        pass
+        CLI._limpar_tela()
+
+        # Criar barra de vida
+        barra_hp = CLI._gerar_barra_progresso(
+            status_dict["current_life"], status_dict["max_life"], tamanho=15
+        )
+
+        # Monta a ficha de personagem
+        nome = status_dict["name"]
+        ataque = status_dict["attack"]
+        velocidade = status_dict["speed"]
+        elemento = status_dict["element"]
+        arma = status_dict["equipped_weapon"]
+
+        print("=" * 60)
+        print(f"{'FICHA DE PERSONAGEM':^60}")
+        print("=" * 60)
+
+        # Nome
+        print(f"{'Nome:':^30} {nome:^30}")
+        print("-" * 60)
+
+        # Vida
+        print(f"      Vida: {barra_hp}")
+        print("-" * 60)
+
+        # Ataque e Velocidade lado a lado
+        print(f"{'Ataque:':^30} {ataque:^30}")
+        print(f"{'Velocidade:':^30} {velocidade:^30}")
+        print("-" * 60)
+
+        # Elemento e Arma
+        print(f"{'Elemento:':^30} {elemento:^30}")
+        print(f"{'Arma Equipada:':^30} {arma:^30}")
+        print("=" * 60)
+        print("[Pressione ENTER para voltar]".center(60))
+        print("=" * 60)
+
+        CLI._ler_tecla()
 
     # Exploração e Inventário
     @staticmethod
@@ -636,7 +674,12 @@ class CLI:
         O que faz: Imprime o texto formatado com quebra de linha inteligente
                    e uma borda visual para imersão.
         """
-        pass
+        CLI._limpar_tela()
+
+        CLI._imprimir_lento(description)
+        time.sleep(0.5)
+        print("\nPressione ENTER para continuar...")
+        CLI._ler_tecla()
 
     @staticmethod
     def show_exploration_menu() -> str:
@@ -644,7 +687,35 @@ class CLI:
         O que faz: Imprime "O que deseja fazer? 1. Avançar para próxima sala | 2. Ver Inventário | 3. Ficha de personagem (apenas se der tempo)".
         O que devolve: A string "1" ou "2".
         """
-        pass
+        opcoes = [
+            f"{Color.GREEN}Avançar para próxima sala{Color.RESET}",
+            f"{Color.BROWN}Ver Inventário{Color.RESET}",
+            f"{Color.GRAY}Ficha de personagem (em breve){Color.RESET}",
+        ]
+
+        while True:
+            escolha_idx = CLI._mostrar_menu_interativo(
+                titulo=f"{Color.CYAN}O QUE DESEJA FAZER?{Color.RESET}",
+                opcoes=opcoes,
+            )
+
+            if escolha_idx == 0:
+                return "1"
+
+            if escolha_idx == 1:
+                return "2"
+
+            CLI._limpar_tela()
+            print(f"{Color.GRAY}=" * 60 + Color.RESET)
+            print(f"{Color.YELLOW}{'FICHA DE PERSONAGEM':^60}{Color.RESET}")
+            print(f"{Color.GRAY}=" * 60 + Color.RESET)
+            print(
+                f"\n{Color.GRAY}Essa opção ainda está em desenvolvimento.\n"
+                f"Ela ficará disponível em uma próxima atualização!{Color.RESET}\n"
+            )
+            print(f"{Color.CYAN}[Pressione ENTER para voltar]{Color.RESET}".center(60))
+            CLI._clear_keyboard_buffer()
+            CLI._ler_tecla()
 
     @staticmethod
     def _gerar_barra_progresso(
@@ -724,6 +795,8 @@ class CLI:
             )
 
             if escolha_idx == 0:
+                CLI.show_exploration_menu()
+
                 # Extrai apenas as descrições do dicionário para mostrar na tela
                 textos_ataques = [
                     info["description"] for info in acoes_do_heroi.values()
@@ -945,7 +1018,23 @@ if __name__ == "__main__":
     acao = CLI.show_main_menu()
 
     if acao == "1":
-        # --- PASSO 2: CRIAÇÃO DO HERÓI ---
+        CLI.show_exploration_menu()
+
+        CLI.print_room_description(
+            description="Um enorme castelo com muitas torres e janelas iluminadas, brilhando no alto da montanha."
+        )
+
+        CLI.show_hero_status(
+            {
+                "name": "Alan",
+                "current_life": 10,
+                "max_life": 10,
+                "attack": 10,
+                "speed": 10,
+                "element": 10,
+                "equipped_weapon": "Matadora",
+            }
+        )
         nome_heroi, classe_heroi = CLI.ask_hero_info()
 
         CLI._limpar_tela()

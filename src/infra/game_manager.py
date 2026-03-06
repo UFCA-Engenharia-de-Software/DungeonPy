@@ -21,32 +21,34 @@ class GameManager:
     """
 
     def __init__(self, cli_instance: 'CLI'):
-        self.cli = cli_instance
-        self.hero: Optional[Hero] = None
-        self.dungeon: List[Room] = []
-        self.current_room_index: int = 0
-        self.is_running: bool = True
+        self._cli = cli_instance
+        self._hero: Optional[Hero] = None
+        self._dungeon: List[Room] = []
+        self._current_room_index: int = 0
+        self._is_running: bool = True
 
     def start_game(self) -> None:
         """Entry point of the game."""
         
-        choice = self.cli.show_main_menu()
+        choice = self._cli.show_main_menu()
 
         if choice in ["New Game", "Novo Jogo", "1"]:
             self.setup_new_game()
+
         elif choice in ["Load Game", "Continuar", "2"]:
             self.load_game()
+
         elif choice in ["Sair", "Exit", "0"]:
-            self.is_running = False
+            self._is_running = False
 
     def setup_new_game(self) -> None:
         """Prepares the board for accessing and using the factories."""
-        name, hero_class = self.cli.ask_hero_info()
+        name, hero_class = self._cli.ask_hero_info()
         
-        self.hero = HeroFactory.create_hero(name, hero_class)
+        self._hero = HeroFactory.create_hero(name, hero_class)
 
         floors = 5
-        self.dungeon = [LevelFactory.create_room(level = i) for i in range(1, floors + 1)]
+        self._dungeon = [LevelFactory.create_room(level = i) for i in range(1, floors + 1)]
         self.run_exploration_loop()
 
     #SAVE & LOAD:
@@ -54,20 +56,20 @@ class GameManager:
 
     def save_game(self) -> None:
         """Packages the current game state using the game_state module."""
-        if not self.hero:
+        if not self._hero:
             return
         
         #success = GameState.save_current_state(
-            #hero = self.hero,
-            #dungeon = self.dungeon,
-            #current_room_index = self.current_room_index
+            #hero = self._hero,
+            #dungeon = self._dungeon,
+            #current_room_index = self._current_room_index
         #)
         success = True #PROVISÓRIO
 
         if success:
-            self.cli.display_message("Jogo salvo com sucesso!")
+            self._cli.display_message("Jogo salvo com sucesso!")
         else:
-            self.cli.display_message("Erro ao salvar o jogo.")
+            self._cli.display_message("Erro ao salvar o jogo.")
 
     def load_game(self) -> None:
         """Rebuilds the game from the data found in game_state."""
@@ -76,15 +78,15 @@ class GameManager:
         loaded_data = None #PROVISÓRIO
 
         if not loaded_data:
-            self.cli.display_message("Erro: Save corrompido ou inexistente! Iniciando novo jogo...")
+            self._cli.display_message("Erro: Save corrompido ou inexistente! Iniciando novo jogo...")
             self.setup_new_game()
             return
         
-        self.hero = loaded_data["hero"]
-        self.dungeon = loaded_data["dungeon"]
-        self.current_room_index = loaded_data["current_room_index"]
+        self._hero = loaded_data["hero"]
+        self._dungeon = loaded_data["dungeon"]
+        self._current_room_index = loaded_data["current_room_index"]
 
-        self.cli.display_message(f"Jogo carregado! Bem-vindo de volta, {self.hero.name}.")
+        self._cli.display_message(f"Jogo carregado! Bem-vindo de volta, {self._hero.name}.")
         self.run_exploration_loop()
 
 
@@ -93,45 +95,49 @@ class GameManager:
     def run_exploration_loop(self):
         """Main dungeon room exploration loop."""
 
-        while self.is_running and self.current_room_index < len(self.dungeon):
-            currrent_room = self.dungeon[self.current_room_index]
+        while self._is_running and self._current_room_index < len(self._dungeon):
+            current_room = self._dungeon[self._current_room_index]
 
-            self.cli.print_room_description(currrent_room.get_description())
+            self._cli.print_room_description(current_room.get_description())
 
-            if currrent_room.monsters:
-                survived = self.run_combat_loop(currrent_room)
+            if current_room.monsters:
+                survived = self.run_combat_loop(current_room)
+
                 if not survived:
                     break
             else:
 
-                choice = self.cli.show_exploration_menu()
+                choice = self._cli.show_exploration_menu()
             
                 if choice in ["Avançar", "Avance"]:
-                    self.current_room_index += 1
-                    if self.current_room_index >= len(self.dungeon):
-                        self.cli.show_victory(self.hero.name)
-                        self.is_running = False
+                    self._current_room_index += 1
+
+                    if self._current_room_index >= len(self._dungeon):
+                        self._cli.show_victory(self._hero.name)
+                        self._is_running = False
+
                 elif choice in ["Ver inventário", "Inventory"]:
                     self.open_inventory_menu()
+
                 elif choice in ["Sair", "Exit"]:
-                    self.is_running = False
+                    self._is_running = False
 
     def run_combat_loop(self, room: Room):
         """Orchestrates the fight in the current room."""
-        room_level = self.current_room_index + 1
+        room_level = self._current_room_index + 1
 
         while room.monsters:
             current_monsters = room.monsters[0]
-            battle = Battle(self.hero, current_monsters)
+            battle = Battle(self._hero, current_monsters)
 
             while battle.is_combat_active:
-                actions = self.hero.get_actions()
-                choice = self.cli.get_combat_choice(
+                actions = self._hero.get_actions()
+                choice = self._cli.get_combat_choice(
                     acoes_do_heroi = actions,
-                    nome_heroi = self.hero.name,
+                    nome_heroi = self._hero.name,
                     nivel_heroi = room_level,
-                    hp_atual = self.hero.current_life,
-                    hp_max = self.hero.max_life,
+                    hp_atual = self._hero.current_life,
+                    hp_max = self._hero.max_life,
                     arte_monstro = getattr(current_monsters, "art", ""),
                     nome_monstro = current_monsters.name
                 )
@@ -143,11 +149,11 @@ class GameManager:
                 turn_result = battle.execute_turn(choice)
                 log = turn_result.get("turn_log", {})
 
-                self.cli.display_turn_log(
+                self._cli.display_turn_log(
                     turn_number = battle.turn_count,
-                    hero_name = self.hero.name,
-                    hero_hp = self.hero.current_life,
-                    hero_max_hp = self.hero.max_life,
+                    hero_name = self._hero.name,
+                    hero_hp = self._hero.current_life,
+                    hero_max_hp = self._hero.max_life,
                     monster_name = current_monsters.name,
                     monster_hp = current_monsters.current_life,
                     monster_max_hp = current_monsters.max_life,
@@ -155,9 +161,9 @@ class GameManager:
                     status = {}
                 )
 
-                if not self.hero.is_it_alive():
-                    self.cli.show_game_over()
-                    self.is_running = False
+                if not self._hero.is_it_alive():
+                    self._cli.show_game_over()
+                    self._is_running = False
                     return False
                 
             loot = current_monsters.get_loot()
@@ -165,20 +171,20 @@ class GameManager:
             missed_names = []
 
             for item in loot:
-                if self.hero.inventory.can_add_item(item):
-                    self.hero.inventory.add_item_to_inventory(item)
+                if self._hero.inventory.can_add_item(item):
+                    self._hero.inventory.add_item_to_inventory(item)
                     dropped_names.append(item.name)
                 else:
                     missed_names.append(item.name)
             
-            self.cli.show_battle_reward(
+            self._cli.show_battle_reward(
                 monster_name = current_monsters.name,
                 dropped_items = dropped_names,
                 missed_items = missed_names,
                 leveled_up = True
             )
             
-            room._monsters.pop(0)
+            room.remove_defeated_monster()
     
         return True
     
@@ -186,52 +192,52 @@ class GameManager:
         """Manages the inventory display and interactions."""
 
         while True:
-            summary = self.hero.inventory.get_items_summary()
-            resultado = self.cli.show_inventory(summary)
+            summary = self._hero.inventory.get_items_summary()
+            resultado = self._cli.show_inventory(summary)
     
             if not resultado:
                 break
 
             item_name, action = resultado
 
-            item_list = self.hero.inventory.items
+            item_list = self._hero.inventory.items
             selected_item = next((i for i in item_list if i.name == item_name), None)
 
             if not selected_item:
                 continue
 
             elif action == "descartar":
-                self.hero.inventory.remove_item_from_inventory(selected_item)
-                self.cli.display_message(f"{self.hero.name} jogou {selected_item.name} no chão.")
+                self._hero.inventory.remove_item_from_inventory(selected_item)
+                self._cli.display_message(f"{self._hero.name} jogou {selected_item.name} no chão.")
 
             elif action == "usar":
                 if isinstance(selected_item, ConsumableItem):
-                    selected_item.use(self.hero)
-                    self.hero.inventory.remove_item_from_inventory(selected_item)
-                    self.cli.display_message(f"{self.hero.name} consumiu {selected_item.name}. HP: {self.hero.current_life}/{self.hero.max_life}.")
+                    selected_item.use(self._hero)
+                    self._hero.inventory.remove_item_from_inventory(selected_item)
+                    self._cli.display_message(f"{self._hero.name} consumiu {selected_item.name}. HP: {self._hero.current_life}/{self._hero.max_life}.")
 
                 elif isinstance(selected_item, Weapon):
                     try:
-                        self.hero.equip_weapon(selected_item)
-                        self.cli.display_message(f"{self.hero.name} equipou {selected_item.name}!")
+                        self._hero.equip_weapon(selected_item)
+                        self._cli.display_message(f"{self._hero.name} equipou {selected_item.name}!")
 
                     except ValueError as e:
                         #IF THE PLAYER ALREADY HAs AN EQUIPPED WEAPON:
-                        old_one = self.hero.equipped_weapon
-                        self.hero.unequip_weapon()
-                        self.hero.equip_weapon(selected_item)
-                        self.cli.display_message(f"{self.hero.name} trocou {old_one.name} por {selected_item.name}.")
-                        
+                        old_one = self._hero.equipped_weapon
+                        self._hero.unequip_weapon()
+                        self._hero.equip_weapon(selected_item)
+                        self._cli.display_message(f"{self._hero.name} trocou {old_one.name} por {selected_item.name}.")
+
                     except TypeError as e:
                         #IN CASE ANYONE WHO'S NOT A MAGE TRIES TO EQUIP A GRIMOIRE:
-                        self.cli.display_message(str(e))
+                        self._cli.display_message(str(e))
                 
                 else:
-                    self.cli.display_message("Esse item não pode ser usado agora.")
+                    self._cli.display_message("Esse item não pode ser usado agora.")
 
     def process_room_clear(self) -> None:
         """Handles hero progression after cleaning a room."""
 
         points_to_upgrade = 1
-        attribute_choice = self.cli.ask_upgrade_choice()
-        self.hero.upgrade(points_to_upgrade, attribute_choice)
+        attribute_choice = self._cli.ask_upgrade_choice()
+        self._hero.upgrade(points_to_upgrade, attribute_choice)

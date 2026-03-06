@@ -340,12 +340,12 @@ class CLI:
 
         # Âncora visual triste para a sala
         arte_vela = r"""
-               (  
-              ) ) 
-             ( (  
-              |   
+               (
+              ) )
+             ( (
+              |
            .--|--.
-          /       \ 
+          /       \
          |_________|
         """
 

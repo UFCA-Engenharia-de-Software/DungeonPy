@@ -170,3 +170,73 @@ def test_grimoire_drops_have_element_and_mana():
                 assert isinstance(item.element, Element)
                 assert item.mana_cost > 0
                 assert item.magic_power > 0
+
+
+# Tests for balancing of itens and drops
+
+
+def test_get_loot_for_monster_always_contains_fixed_drops():
+    """Every monster must drop a Health Potion and a Mana Potion."""
+    loot = ItemsFactory.get_loot_for_monster("Goblin")
+
+    names = [item.name for item in loot]
+    assert "Poção De Cura" in names
+    assert "Poção De Mana" in names
+
+
+def test_get_loot_for_monster_known_includes_equipment():
+    """Monsters with an entry in DROP_TABLES must drop equipment in addition to potions."""
+    loot = ItemsFactory.get_loot_for_monster("Salamandra")
+
+    equipment = [item for item in loot if not isinstance(item, ConsumableItem)]
+    assert len(equipment) >= 1
+
+
+def test_get_loot_for_monster_unknown_returns_only_fixed_drops():
+    """Unknown monsters (boss-generated, for example) only receive the fixed potions"""
+    loot = ItemsFactory.get_loot_for_monster("Monstro Inexistente")
+
+    assert len(loot) == len(ItemsFactory._fixed_drops())
+    assert all(isinstance(item, ConsumableItem) for item in loot)
+
+
+def test_get_loot_for_monster_returns_independent_lists():
+    """
+    Two calls to the same monster must not share the same list nor the same objects
+    this prevents cross-mutation between fights.
+    """
+    loot_a = ItemsFactory.get_loot_for_monster("Orc")
+    loot_b = ItemsFactory.get_loot_for_monster("Orc")
+
+    assert loot_a is not loot_b
+    # The fixed potion objects must not be the same instance.
+    assert loot_a[0] is not loot_b[0]
+
+
+def test_get_loot_for_monster_all_known_monsters():
+    """All monsters in DROP_TABLES return loot with at least 3 items (2 potions + 1 equipment)."""
+    for monster_name in ItemsFactory.DROP_TABLES:
+        loot = ItemsFactory.get_loot_for_monster(monster_name)
+        assert len(loot) >= 3, (
+            f"{monster_name} deveria ter pelo menos 3 itens no loot, mas tem {len(loot)}"
+        )
+
+
+def test_drop_distribution_is_balanced():
+    """
+    Each equipment type (weapon, ranged_weapon, grimoire) must have exactly 5 associated monsters."
+    """
+    counts = {"weapon": 0, "ranged_weapon": 0, "grimoire": 0}
+
+    for drop_config in ItemsFactory.DROP_TABLES.values():
+        for item_type in counts:
+            if item_type in drop_config:
+                counts[item_type] += 1
+
+    assert counts["weapon"] == 5, f"weapons: esperado 5, encontrado {counts['weapon']}"
+    assert counts["ranged_weapon"] == 5, (
+        f"ranged_weapons: esperado 5, encontrado {counts['ranged_weapon']}"
+    )
+    assert counts["grimoire"] == 5, (
+        f"grimoires: esperado 5, encontrado {counts['grimoire']}"
+    )

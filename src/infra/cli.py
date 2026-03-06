@@ -103,14 +103,14 @@ class CLI:
         """Exibe o menu principal com a arte do jogo e subtítulo."""
 
         arte = r"""
-                                                             
-▄▄▄▄▄▄                                       ▄▄▄▄▄▄▄         
-███▀▀██▄                                     ███▀▀███▄       
-███  ███ ██ ██ ████▄ ▄████ ▄█▀█▄ ▄███▄ ████▄ ███▄▄███▀ ██ ██ 
-███  ███ ██ ██ ██ ██ ██ ██ ██▄█▀ ██ ██ ██ ██ ███▀▀▀▀   ██▄██ 
-██████▀  ▀██▀█ ██ ██ ▀████ ▀█▄▄▄ ▀███▀ ██ ██ ███        ▀██▀ 
-                        ██                               ██  
-                      ▀▀▀                              ▀▀▀   
+
+▄▄▄▄▄▄                                       ▄▄▄▄▄▄▄
+███▀▀██▄                                     ███▀▀███▄
+███  ███ ██ ██ ████▄ ▄████ ▄█▀█▄ ▄███▄ ████▄ ███▄▄███▀ ██ ██
+███  ███ ██ ██ ██ ██ ██ ██ ██▄█▀ ██ ██ ██ ██ ███▀▀▀▀   ██▄██
+██████▀  ▀██▀█ ██ ██ ▀████ ▀█▄▄▄ ▀███▀ ██ ██ ███        ▀██▀
+                        ██                               ██
+                      ▀▀▀                              ▀▀▀
         """
 
         # Adicionando vida ao menu: Subtítulo, decoração e versão
@@ -156,9 +156,9 @@ class CLI:
         # Arte das 3 armas lado a lado (Pure ASCII para não bugar)
         arte_classes = r"""
       [ GUERREIRO ]          [ ARQUEIRO ]            [ MAGO ]
-        
+
         o==}=====>             >>--->                   S2
-        
+
        Vida:  150            Vida:  100             Vida:   80
        Ataque: 30            Ataque: 35             Ataque: 50
        Veloc:  10            Veloc:  25             Veloc:  15
@@ -243,12 +243,12 @@ class CLI:
 
         # Âncora visual triste para a sala
         arte_vela = r"""
-               (  
-              ) ) 
-             ( (  
-              |   
+               (
+              ) )
+             ( (
+              |
            .--|--.
-          /       \ 
+          /       \
          |_________|
         """
 
@@ -629,68 +629,80 @@ class CLI:
             inventory_summary: dict retornado por Inventory.get_items_summary()
 
         Retorna:
-            (item_name, action) ou None
+            (item_name, action) -> quando o jogador escolhe usar/equipar/descartar um item.
+            None               -> quando o jogador escolhe "Voltar" no menu de itens.
+
         """
 
         items = inventory_summary["items"]
 
-        # Caso inventário vazio
+        # Inventário vazio: sem itens, sem navegação
         if not items:
+            CLI._limpar_tela()
             print("\n" + "=" * 60)
             print(f"{'INVENTÁRIO':^60}")
             print("=" * 60)
-            print("\nInventário vazio.")
-            input("\nPressione Enter para voltar...")
+            print("\nSua mochila está vazia.".center(60))
+            input("\n" + "[Pressione ENTER para voltar...]".center(60))
             return None
 
-        # ===== MENU PRINCIPAL DO INVENTÁRIO =====
-
+        # Dados de cabeçalho (peso) — calculados uma vez fora dos loops
         header = (
             f"Peso: "
             f"{inventory_summary['current_weight']:.1f}/"
             f"{inventory_summary['capacity']:.1f}"
         )
 
-        options = [f"{item['name']} (peso: {item['weight']})" for item in items]
-
-        options.append("Voltar")
-
-        selected_index = CLI._mostrar_menu_interativo(
-            titulo=f"INVENTÁRIO\n{header}",
-            opcoes=options,
-        )
-
-        # Se escolheu Voltar
-        if selected_index == len(options) - 1:
-            return None
-
-        selected_item = items[selected_index]
-        item_name = selected_item["name"]
-
-        # ===== SUBMENU DE AÇÕES =====
-
-        action_options = [
-            "Usar / Equipar",
-            "Ver descrição",
-            "Descartar",
-            "Voltar",
-        ]
-
-        action_index = CLI._mostrar_menu_interativo(
-            titulo=f"AÇÕES - {item_name}",
-            opcoes=action_options,
-        )
-
-        if action_index == 3:
-            return None
-
+        # Mapa fixo: índice da ação → string reconhecida pelo GameManager/Battle
         action_map = {
             0: "usar",
             1: "ver_descricao",
             2: "descartar",
         }
 
-        return (item_name, action_map[action_index])
+        action_options = [
+            "Usar / Equipar",
+            "Ver descrição",
+            "Descartar",
+            "Voltar ao inventário",  # índice 3 — label mais descritivo que "Voltar"
+        ]
+
+        VOLTAR_INVENTARIO = len(action_options) - 1
+
+        # Loop externo: lista de itens
+        # Permanece ativo até o jogador escolher "Voltar" neste nível.
+        while True:
+            item_options = [
+                f"{item['name']} (peso: {item['weight']})" for item in items
+            ]
+            item_options.append("Voltar")
+
+            VOLTAR_MENU = len(item_options) - 1  # constante semântica
+
+            selected_index = CLI._mostrar_menu_interativo(
+                titulo=f"INVENTÁRIO  |  {header}",
+                opcoes=item_options,
+            )
+
+            # Jogador quer sair do inventário completamente
+            if selected_index == VOLTAR_MENU:
+                return None
+
+            selected_item = items[selected_index]
+            item_name = selected_item["name"]
+
+            # Loop interno: submenu de ações
+            while True:
+                action_index = CLI._mostrar_menu_interativo(
+                    titulo=f"AÇÕES  —  {item_name}",
+                    opcoes=action_options,
+                )
+
+                if action_index == VOLTAR_INVENTARIO:
+                    break  # ← sai só do loop interno; loop externo continua
+
+                # Ação real selecionada → entrega resultado ao chamador
+                return (item_name, action_map[action_index])
 
     @staticmethod
     def display_turn_log(

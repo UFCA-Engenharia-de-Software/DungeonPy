@@ -677,6 +677,14 @@ class CLI:
         print("\n" + "=" * 60)
         input("\nPressione Enter para continuar...")
 
+    @staticmethod
+    def display_message(msg: str) -> None:
+        """
+        Exibe mensagens rápidas do sistema e pausa a tela.
+        """
+        print(f"\n{msg}")
+        print("\n[Pressione ENTER para continuar...]")
+        CLI._ler_tecla()
 
 # --- ÁREA DE TESTE ---
 # ====================================================================

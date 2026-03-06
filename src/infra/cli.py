@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-import textwrap
 
 
 class Color:
@@ -284,7 +283,6 @@ class CLI:
         Create the effect of typewriter
         If Player press ENTER, jump the effect and print the whole line
         """
-        import sys
         import time
         import os
 
@@ -689,7 +687,35 @@ class CLI:
         O que faz: Imprime "O que deseja fazer? 1. Avançar para próxima sala | 2. Ver Inventário | 3. Ficha de personagem (apenas se der tempo)".
         O que devolve: A string "1" ou "2".
         """
-        pass
+        opcoes = [
+            f"{Color.GREEN}Avançar para próxima sala{Color.RESET}",
+            f"{Color.BROWN}Ver Inventário{Color.RESET}",
+            f"{Color.GRAY}Ficha de personagem (em breve){Color.RESET}",
+        ]
+
+        while True:
+            escolha_idx = CLI._mostrar_menu_interativo(
+                titulo=f"{Color.CYAN}O QUE DESEJA FAZER?{Color.RESET}",
+                opcoes=opcoes,
+            )
+
+            if escolha_idx == 0:
+                return "1"
+
+            if escolha_idx == 1:
+                return "2"
+
+            CLI._limpar_tela()
+            print(f"{Color.GRAY}=" * 60 + Color.RESET)
+            print(f"{Color.YELLOW}{'FICHA DE PERSONAGEM':^60}{Color.RESET}")
+            print(f"{Color.GRAY}=" * 60 + Color.RESET)
+            print(
+                f"\n{Color.GRAY}Essa opção ainda está em desenvolvimento.\n"
+                f"Ela ficará disponível em uma próxima atualização!{Color.RESET}\n"
+            )
+            print(f"{Color.CYAN}[Pressione ENTER para voltar]{Color.RESET}".center(60))
+            CLI._clear_keyboard_buffer()
+            CLI._ler_tecla()
 
     @staticmethod
     def _gerar_barra_progresso(
@@ -769,6 +795,8 @@ class CLI:
             )
 
             if escolha_idx == 0:
+                CLI.show_exploration_menu()
+
                 # Extrai apenas as descrições do dicionário para mostrar na tela
                 textos_ataques = [
                     info["description"] for info in acoes_do_heroi.values()
@@ -990,6 +1018,7 @@ if __name__ == "__main__":
     acao = CLI.show_main_menu()
 
     if acao == "1":
+        CLI.show_exploration_menu()
 
         CLI.print_room_description(
             description="Um enorme castelo com muitas torres e janelas iluminadas, brilhando no alto da montanha."

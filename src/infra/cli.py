@@ -1,4 +1,7 @@
 import os
+import sys
+import time
+import textwrap
 
 
 class Color:
@@ -632,15 +635,6 @@ class CLI:
             status_dict["current_life"], status_dict["max_life"], tamanho=15
         )
 
-        # Arte decorativa (escudo e espada)
-        arte_ficha = r"""
-          ╔═══════╗
-          ║   ⚔   ║
-          ║  / \  ║
-          ║ /   \ ║
-          ╚═══════╝
-        """
-
         # Monta a ficha de personagem
         nome = status_dict["name"]
         ataque = status_dict["attack"]
@@ -651,8 +645,6 @@ class CLI:
         print("=" * 60)
         print(f"{'FICHA DE PERSONAGEM':^60}")
         print("=" * 60)
-        print(arte_ficha)
-        print()
 
         # Nome
         print(f"{'Nome:':^30} {nome:^30}")
@@ -684,7 +676,12 @@ class CLI:
         O que faz: Imprime o texto formatado com quebra de linha inteligente
                    e uma borda visual para imersão.
         """
-        pass
+        CLI._limpar_tela()
+
+        CLI._imprimir_lento(description)
+        time.sleep(0.5)
+        print("\nPressione ENTER para continuar...")
+        CLI._ler_tecla()
 
     @staticmethod
     def show_exploration_menu() -> str:
@@ -993,6 +990,10 @@ if __name__ == "__main__":
     acao = CLI.show_main_menu()
 
     if acao == "1":
+
+        CLI.print_room_description(
+            description="Um enorme castelo com muitas torres e janelas iluminadas, brilhando no alto da montanha."
+        )
 
         CLI.show_hero_status(
             {

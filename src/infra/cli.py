@@ -623,10 +623,58 @@ class CLI:
         """
         O que recebe: Um dicionário com todos os status atuais do herói.
         O que faz: Imprime a "Ficha de Personagem" completa e espera uma tecla para voltar.
-        Precisa imprimir a ficha bem formatada mostrando os status: "Nome, Vida atual em relação a máxima, ataque, velocidade, e arma atual equipada."
-        Para isso, é necessário criar um dict na classe hero, por isso, esse método será opcional e implementado apenas se sobrar tempo
+        Mostra os status: "Nome, Vida atual em relação a máxima, ataque, velocidade, e arma atual equipada."
         """
-        pass
+        CLI._limpar_tela()
+
+        # Criar barra de vida
+        barra_hp = CLI._gerar_barra_progresso(
+            status_dict["current_life"], status_dict["max_life"], tamanho=15
+        )
+
+        # Arte decorativa (escudo e espada)
+        arte_ficha = r"""
+          ╔═══════╗
+          ║   ⚔   ║
+          ║  / \  ║
+          ║ /   \ ║
+          ╚═══════╝
+        """
+
+        # Monta a ficha de personagem
+        nome = status_dict["name"]
+        ataque = status_dict["attack"]
+        velocidade = status_dict["speed"]
+        elemento = status_dict["element"]
+        arma = status_dict["equipped_weapon"]
+
+        print("=" * 60)
+        print(f"{'FICHA DE PERSONAGEM':^60}")
+        print("=" * 60)
+        print(arte_ficha)
+        print()
+
+        # Nome
+        print(f"{'Nome:':^30} {nome:^30}")
+        print("-" * 60)
+
+        # Vida
+        print(f"      Vida: {barra_hp}")
+        print("-" * 60)
+
+        # Ataque e Velocidade lado a lado
+        print(f"{'Ataque:':^30} {ataque:^30}")
+        print(f"{'Velocidade:':^30} {velocidade:^30}")
+        print("-" * 60)
+
+        # Elemento e Arma
+        print(f"{'Elemento:':^30} {elemento:^30}")
+        print(f"{'Arma Equipada:':^30} {arma:^30}")
+        print("=" * 60)
+        print("[Pressione ENTER para voltar]".center(60))
+        print("=" * 60)
+
+        CLI._ler_tecla()
 
     # Exploração e Inventário
     @staticmethod
@@ -945,7 +993,18 @@ if __name__ == "__main__":
     acao = CLI.show_main_menu()
 
     if acao == "1":
-        # --- PASSO 2: CRIAÇÃO DO HERÓI ---
+
+        CLI.show_hero_status(
+            {
+                "name": "Alan",
+                "current_life": 10,
+                "max_life": 10,
+                "attack": 10,
+                "speed": 10,
+                "element": 10,
+                "equipped_weapon": "Matadora",
+            }
+        )
         nome_heroi, classe_heroi = CLI.ask_hero_info()
 
         CLI._limpar_tela()

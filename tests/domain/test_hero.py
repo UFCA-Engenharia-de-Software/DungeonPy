@@ -100,3 +100,42 @@ def test_missing_actions_raises():
 
     with pytest.raises(TypeError):
         Incomplete("X", 100, 100, 10, 5)
+
+
+def test_get_hero_status_returns_correct_dict():
+    """Testa se get_hero_status retorna um dicionário com todos os atributos corretos."""
+    hero = ConcreteHero(
+        name="TestHero",
+        max_life=100,
+        current_life=80,
+        attack=15,
+        speed=5,
+        element=Element.FIRE,
+    )
+
+    status = hero.get_hero_status()
+
+    # Note: Entity.name applica .title() ao nome
+    assert status["name"] == "Testhero"
+    assert status["current_life"] == 80
+    assert status["max_life"] == 100
+    assert status["attack"] == 15
+    assert status["speed"] == 5
+    assert status["element"] == Element.FIRE.value
+    assert status["equipped_weapon"] == "Nenhuma"
+
+
+def test_get_hero_status_with_equipped_weapon():
+    """Testa se get_hero_status mostra corretamente a arma equipada."""
+    from unittest.mock import Mock
+
+    hero = ConcreteHero("TestHero", 100, 100, 15, 5)
+
+    # Simular uma arma equipada
+    fake_weapon = Mock()
+    fake_weapon.name = "Espada Mágica"
+    hero._equipped_weapon = fake_weapon
+
+    status = hero.get_hero_status()
+
+    assert status["equipped_weapon"] == "Espada Mágica"

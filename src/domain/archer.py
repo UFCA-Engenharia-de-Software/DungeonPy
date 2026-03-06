@@ -45,7 +45,8 @@ class Archer(Hero):
         self.max_ammo = max_ammo
         self.current_ammo = current_ammo
         self.dodge = dodge
-        self.equipped_weapon = equipped_weapon
+        if equipped_weapon is not None:
+            self.equip_weapon(equipped_weapon)
         self.is_aiming = is_aiming
 
     @property
@@ -91,17 +92,6 @@ class Archer(Hero):
         self._dodge = value
 
     @property
-    def equipped_weapon(self):
-        return self._equipped_weapon
-
-    @equipped_weapon.setter
-    def equipped_weapon(self, value):
-        if value is not None and (not isinstance(value, RangedWeapon)):
-            raise TypeError("Archer just can equip a Ranged Weapon")
-
-        self._equipped_weapon = value
-
-    @property
     def is_aiming(self):
         return self._is_aiming
 
@@ -111,6 +101,12 @@ class Archer(Hero):
             raise TypeError("Is aiming needs to be True or False")
 
         self._is_aiming = value
+
+    def equip_weapon(self, weapon: RangedWeapon):
+        if not isinstance(weapon, RangedWeapon):
+            raise TypeError("Archer Weapon must be a RangedWeapon")
+
+        super().equip_weapon(weapon)
 
     def strike(self, target: Entity) -> None:
         """
@@ -153,6 +149,27 @@ class Archer(Hero):
         if buffer > 0:
             self.dodge = True
 
+    def ultimate(self, target: Entity):
+        """Archer's special attack. Costs lots of arrows and a bit of life, deals lots of damage."""
+
+        ammo_cost = 3
+
+        if self.current_ammo < ammo_cost:
+            return f"{self.name} não tem munição suficiente para isso."
+
+        life_recoil = 10
+        if self.current_life <= life_recoil:
+            return f"{self.name} está muito fraco e não aguentaria o recuo do ataque."
+
+        damage = int(self.attack * 3.2)
+        target.damage_received(damage, Element.NEUTRAL)
+
+        self.current_ammo -= ammo_cost
+        self.current_life -= life_recoil
+
+        # AVISO: ESSE RETURN FOI COLOCADO PARA TER COERÊNCIA COM O MAGE.py NO ENTANTO NÃO É RESPONSABILIDADE DAS CLASSES DE DOMÍNIO RETORNAREM STRINGS DE AVISO. LEMBRE-SE
+        return f"{self.name} sacrifica sua própria vitalidade para disparar um TIRO TRIPLO letal em {target.name}! Causou {damage} de dano."
+
     def reset_dodge(self) -> None:
         """Reset dodge after deviating"""
         self.dodge = False
@@ -186,7 +203,7 @@ class Archer(Hero):
 
         return {
             "1": {
-                "description": "Atirar (Ataque básico com arma)",
+                "description": "Atirar (Ataque básico com arma, gasta 1 flecha)",
                 "method": self.strike,
             },
             "2": {
@@ -196,5 +213,9 @@ class Archer(Hero):
             "3": {
                 "description": "Recarregar (recarrega a munição)",
                 "method": self.reload,
+            },
+            "4": {
+                "description": "Tiro Triplo (Gasta 3 flechas, se dá 10 de dano, mas inflige muito dano)",
+                "method": self.ultimate,
             },
         }

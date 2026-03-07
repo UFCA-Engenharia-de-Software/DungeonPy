@@ -795,7 +795,6 @@ class CLI:
             )
 
             if escolha_idx == 0:
-                CLI.show_exploration_menu()
 
                 # Extrai apenas as descrições do dicionário para mostrar na tela
                 textos_ataques = [

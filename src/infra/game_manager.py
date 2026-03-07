@@ -27,6 +27,8 @@ class GameManager:
         self._current_room_index: int = 0
         self._is_running: bool = True
 
+    #STARTING THE GAME:
+
     def start_game(self) -> None:
         """Entry point of the game."""
         
@@ -44,8 +46,20 @@ class GameManager:
     def setup_new_game(self) -> None:
         """Prepares the board for accessing and using the factories."""
         name, hero_class = self._cli.ask_hero_info()
+
+        #TRANSLATOR:
+        class_id = str(hero_class)
         
-        self._hero = HeroFactory.create_hero(name, hero_class)
+        if class_id == "1" or class_id == "0": # Using 0 in case of real list index.
+            archetype = "warrior"
+        elif class_id == "2":
+            archetype = "archer"
+        elif class_id == "3":
+            archetype = "mage"
+        else:
+            archetype = "warrior" # Just in case (fallback).
+        
+        self._hero = HeroFactory.create_hero(archetype, name)
 
         floors = 5
         self._dungeon = [LevelFactory.create_room(level = i) for i in range(1, floors + 1)]
@@ -95,10 +109,15 @@ class GameManager:
     def run_exploration_loop(self):
         """Main dungeon room exploration loop."""
 
+        # Notepad for remembering rooms.
+        last_room_described = -1
+
         while self._is_running and self._current_room_index < len(self._dungeon):
             current_room = self._dungeon[self._current_room_index]
 
-            self._cli.print_room_description(current_room.get_description())
+            if self._current_room_index != last_room_described:
+                self._cli.print_room_description(current_room.get_description())
+                last_room_described = self._current_room_index
 
             if current_room.monsters:
                 survived = self.run_combat_loop(current_room)
@@ -106,21 +125,24 @@ class GameManager:
                 if not survived:
                     break
             else:
-
                 choice = self._cli.show_exploration_menu()
             
-                if choice in ["Avançar", "Avance"]:
+                if choice == "1": #GO FOWARD
                     self._current_room_index += 1
 
                     if self._current_room_index >= len(self._dungeon):
                         self._cli.show_victory(self._hero.name)
                         self._is_running = False
 
-                elif choice in ["Ver inventário", "Inventory"]:
+                elif choice == "2": #OPEN INVENTORY
                     self.open_inventory_menu()
 
-                elif choice in ["Sair", "Exit"]:
+                elif choice == "3": #SAVE GAME
+                    self.save_game()
+
+                elif choice == "4": #EXIT
                     self._is_running = False
+
 
     def run_combat_loop(self, room: Room):
         """Orchestrates the fight in the current room."""
@@ -130,7 +152,11 @@ class GameManager:
             current_monsters = room.monsters[0]
             battle = Battle(self._hero, current_monsters)
 
+            turn_counter = 1
+
             while battle.is_combat_active:
+                hero_status = self._hero.current_status.name if self._hero.current_status else "Neutral"
+
                 actions = self._hero.get_actions()
                 choice = self._cli.get_combat_choice(
                     acoes_do_heroi = actions,
@@ -148,18 +174,22 @@ class GameManager:
 
                 turn_result = battle.execute_turn(choice)
                 log = turn_result.get("turn_log", {})
+                actions_list = log.get("actions", [])
 
+                # CORREÇÃO: Mostramos a tela linda de log de turno para ver a vida descer!
                 self._cli.display_turn_log(
-                    turn_number = battle.turn_count,
+                    turn_number = turn_counter,
                     hero_name = self._hero.name,
                     hero_hp = self._hero.current_life,
                     hero_max_hp = self._hero.max_life,
                     monster_name = current_monsters.name,
                     monster_hp = current_monsters.current_life,
                     monster_max_hp = current_monsters.max_life,
-                    actions = log.get("actions", []),
-                    status = {}
+                    actions = actions_list,
+                    status = {self._hero.name: hero_status} 
                 )
+
+                turn_counter += 1
 
                 if not self._hero.is_it_alive():
                     self._cli.show_game_over()
@@ -210,6 +240,8 @@ class GameManager:
                 self._hero.inventory.remove_item_from_inventory(selected_item)
                 self._cli.display_message(f"{self._hero.name} jogou {selected_item.name} no chão.")
 
+            # IMPLEMENTAR CHECAR DESCRIÇÃO
+
             elif action == "usar":
                 if isinstance(selected_item, ConsumableItem):
                     selected_item.use(self._hero)
@@ -217,6 +249,7 @@ class GameManager:
                     self._cli.display_message(f"{self._hero.name} consumiu {selected_item.name}. HP: {self._hero.current_life}/{self._hero.max_life}.")
 
                 elif isinstance(selected_item, Weapon):
+
                     try:
                         self._hero.equip_weapon(selected_item)
                         self._cli.display_message(f"{self._hero.name} equipou {selected_item.name}!")

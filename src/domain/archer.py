@@ -145,7 +145,7 @@ class Archer(Hero):
             self.reset_dodge()
             return
 
-        buffer = int(random.randint((-self.speed), (self.speed + (self.speed / 2))))
+        buffer = int(random.randint((-self.speed), (self.speed + (self.speed // 2))))
         if buffer > 0:
             self.dodge = True
 

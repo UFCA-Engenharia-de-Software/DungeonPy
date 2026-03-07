@@ -110,7 +110,7 @@ class Mage(Hero):
         if self.has_meditated:
             return f"{self.name} tenta meditar, mas sua mente já está exausta demais neste combate!"
 
-        mana_recovery = self.max_mana / 2
+        mana_recovery = int(self.max_mana / 2)
 
         self.current_mana += mana_recovery
         self.has_meditated = True

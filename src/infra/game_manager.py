@@ -196,6 +196,9 @@ class GameManager:
                     self._is_running = False
                     return False
                 
+                if hasattr(self._hero, "end_of_turn_routine"):
+                    self._hero.end_of_turn_routine()
+
             loot = current_monsters.get_loot()
             dropped_names = []
             missed_names = []

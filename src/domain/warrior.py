@@ -111,6 +111,9 @@ class Warrior(Hero):
         self.shield = 0
         self.armor = 0
 
+        # SOME SORT OF CLOCK TO END RAGE WHEN NEEDED:
+        self.rage_duration = 2
+
     def reset_rage(self) -> None:
         """Return attributes to normal values after a rage"""
         self.in_rage = self.normal_state["in_rage"]
@@ -119,6 +122,14 @@ class Warrior(Hero):
         self.armor = self.normal_state["armor"]
 
         self.normal_state = {}
+
+    def end_of_turn_routine(self):
+        """Calls reset_rage for GameManager using."""
+        if self.in_rage:
+            self.rage_duration -= 1
+
+            if self.rage_duration <= 0:
+                self.reset_rage()
 
     def get_actions(self) -> dict:
         """

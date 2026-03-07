@@ -183,6 +183,11 @@ class Archer(Hero):
         self.is_aiming = True
         self.dodge = False
 
+    def end_of_turn_routine(self):
+        """Resets aiming for GameManager using."""
+        if self.is_aiming:
+            self.is_aiming = False
+
     def upgrade(self, points: int, choice: int) -> None:
         """Upgrade specific attributes (attack, speed)
         It`s ignoring the parent class logic for game design choice and otimization of time

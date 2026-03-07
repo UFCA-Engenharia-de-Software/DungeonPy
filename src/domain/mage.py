@@ -39,7 +39,7 @@ class Mage(Hero):
 
         self.max_mana = max_mana
         self.current_mana = current_mana
-        self.has_meditated = False
+        self.meditate_cooldown = 0
 
     # PROPERTIES:
 
@@ -101,27 +101,29 @@ class Mage(Hero):
 
     def damage_received(self, value: int, strike_element: Element) -> None:
         super().damage_received(value, strike_element)
-
+        self.current_life -= int(value * strike_element.multiplier(self.element))
+    
     def meditate(self, target: Entity = None) -> str:
         """
         Heals half of the mage's maximum mana points.
-        Can only be used once per combat.
+        Has an 3 turns cooldown.
         """
-        if self.has_meditated:
-            return f"{self.name} tenta meditar, mas sua mente já está exausta demais neste combate!"
+        if self.meditate_cooldown > 0:
+            raise ValueError(f"{self.name} precisa esperar mais {self.meditate_cooldown} turno(s) para meditar novamente!")
 
         mana_recovery = int(self.max_mana / 2)
-
         self.current_mana += mana_recovery
-        self.has_meditated = True
+        self.meditate_cooldown = 3 #RESETS COOLDOWN.
 
         return f"{self.name} se concentra e medita. Recupera {mana_recovery} de MP!"
 
-    def reset_combat_states(self) -> None:
+    def end_of_turn_routine(self) -> None:
         """
-        Called by the game system, as a combat starts or ends.
+        Called by the game manager at the end of every turn.
+        Reduces the cooldown.
         """
-        self.has_meditated = False
+        if self.meditate_cooldown > 0:
+            self.meditate_cooldown -= 1
 
     def ancient_magic(self, target: Entity) -> str:
         """Mage's special attack. Costs lots of mana, deals lots of damage."""
@@ -129,7 +131,7 @@ class Mage(Hero):
         mana_cost = 50
 
         if self.current_mana < mana_cost:
-            return f"{self.name} tentou conjurar Magia Ancestral, mas não tem mana o suficiente para isso."
+            raise ValueError (f"{self.name} tentou conjurar Magia Ancestral, mas não tem mana o suficiente para isso.")
 
         self.current_mana -= mana_cost
         damage = (self.attack * 3) + 50
@@ -166,7 +168,7 @@ class Mage(Hero):
                 "method": self.strike,
             }
         actions["3"] = {
-            "description": "Magia Ancestral (MP: 50)",
+            "description": f"Magia Ancestral (MP: 50)[Mana Atual: {self.current_mana}/{self.max_mana}]",
             "method": self.ancient_magic,
         }
         actions["4"] = {

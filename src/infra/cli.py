@@ -795,8 +795,6 @@ class CLI:
             )
 
             if escolha_idx == 0:
-                CLI.show_exploration_menu()
-
                 # Extrai apenas as descrições do dicionário para mostrar na tela
                 textos_ataques = [
                     info["description"] for info in acoes_do_heroi.values()
@@ -1006,6 +1004,15 @@ class CLI:
         msg_continue = "[Pressione Enter para o próximo turno]"
         cont_spaces = " " * ((60 - len(msg_continue)) // 2)
         print(f"\n{cont_spaces}{Color.CYAN}{msg_continue}{Color.RESET}")
+        CLI._ler_tecla()
+
+    @staticmethod
+    def display_message(msg: str) -> None:
+        """
+        Exibe mensagens rápidas do sistema e pausa a tela.
+        """
+        print(f"\n{msg}")
+        print("\n[Pressione ENTER para continuar...]")
         CLI._ler_tecla()
 
 

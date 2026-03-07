@@ -39,6 +39,14 @@ class Hero(Entity):
         return self._equipped_weapon
 
     def equip_weapon(self, weapon: "Weapon") -> None:
+        if (
+            hasattr(weapon, "allowed_class")
+            and self.__class__.__name__ not in weapon.allowed_class
+        ):
+            raise TypeError(
+                f"A classe {self.__class__.__name__} não possui o conhecimento para empunhar {weapon.name}!"
+            )
+
         if self._equipped_weapon is not None:
             raise ValueError("Hero already has a weapon equipped.")
 

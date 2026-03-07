@@ -145,7 +145,7 @@ class Archer(Hero):
             self.reset_dodge()
             return
 
-        buffer = int(random.randint((-self.speed), (self.speed + (self.speed / 2))))
+        buffer = int(random.randint((-self.speed), (self.speed + (self.speed // 2))))
         if buffer > 0:
             self.dodge = True
 
@@ -182,6 +182,11 @@ class Archer(Hero):
         """Archer Habilite that he cannot miss the strike, receive a little damage boost and cannot dodge"""
         self.is_aiming = True
         self.dodge = False
+
+    def end_of_turn_routine(self):
+        """Resets aiming for GameManager using."""
+        if self.is_aiming:
+            self.is_aiming = False
 
     def upgrade(self, points: int, choice: int) -> None:
         """Upgrade specific attributes (attack, speed)

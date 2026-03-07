@@ -39,6 +39,7 @@ class Grimoire(Weapon):
         )
 
         self.mana_cost = mana_cost
+        self.allowed_class = ["Mage"]
 
         self._attacks = {
             "1": {

@@ -114,13 +114,17 @@ def test_ancient_magic_insufficient_mana(mage_default, mock_target):
     """The attack shall not work if Mana < 50."""
 
     mage_default.current_mana = 49
-    msg = mage_default.ancient_magic(mock_target)
 
-    assert "não tem mana" in msg
+    with pytest.raises(ValueError) as excinfo:
+        mage_default.ancient_magic(
+            mock_target
+        )  # EXPECTING VALUE ERROR IN MANA CHECKING
+
+    assert "não tem mana o suficiente" in str(excinfo.value)
     assert (
         mage_default.current_mana == 49
-    )  # not supposed to spend mana if the attack fails.
-    mock_target.damage_received.assert_not_called()  # no damage.
+    )  # NOT SUPPOSED TO CONSUME MANA IF THE ATTACK FAILS
+    mock_target.damage_received.assert_not_called()  # TARGET RECEIVES NO DAMAGE
 
 
 # UPGRADE TESTS:

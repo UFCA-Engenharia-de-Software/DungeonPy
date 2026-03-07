@@ -1,10 +1,12 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
+from domain.consumable_item import ConsumableItem
 from domain.hero import Hero
 from domain.room import Room
-from domain.consumable_item import ConsumableItem
 from domain.weapon import Weapon
+from infra.hero_repository import HeroRepository
 from services.battle import Battle
+from services.game_state import GameState
 from services.hero_factory import HeroFactory
 from services.level_factory import LevelFactory
 
@@ -25,6 +27,8 @@ class GameManager:
         self._dungeon: List[Room] = []
         self._current_room_index: int = 0
         self._is_running: bool = True
+        self._repository = HeroRepository()
+        self._game_state: Optional[GameState] = None
 
     # STARTING THE GAME:
 
@@ -60,6 +64,8 @@ class GameManager:
 
         self._hero = HeroFactory.create_hero(archetype, name)
 
+        self._game_state = GameState.create_new_game(self._hero)
+
         floors = 5
         self._dungeon = [
             LevelFactory.create_room(level=i) for i in range(1, floors + 1)
@@ -71,42 +77,50 @@ class GameManager:
 
     def save_game(self) -> None:
         """Packages the current game state using the game_state module."""
-        if not self._hero:
+        if not self._hero or not self._game_state:
             return
 
-        # success = GameState.save_current_state(
-        # hero = self._hero,
-        # dungeon = self._dungeon,
-        # current_room_index = self._current_room_index
-        # )
-        success = True  # PROVISÓRIO
+        try:
+            self._game_state.current_level = self._current_room_index + 1
+            self._game_state.update_save_timestamp()
 
-        if success:
+            self._repository.save(self._game_state)
+
             self._cli.display_message("Jogo salvo com sucesso!")
-        else:
-            self._cli.display_message("Erro ao salvar o jogo.")
+
+        except Exception as e:
+            self._cli.display_message(f"Erro ao salvar o jogo: {e}")
 
     def load_game(self) -> None:
         """Rebuilds the game from the data found in game_state."""
 
-        # loaded_data = GameState.load_state()
-        loaded_data = None  # PROVISÓRIO
+        try:
+            self._game_state = self._repository.load()
 
-        if not loaded_data:
+            if not self._game_state:
+                self._cli.display_message(
+                    "Erro: Save corrompido ou inexistente! Iniciando novo jogo..."
+                )
+                self.setup_new_game()
+                return
+
+            self._hero = self._game_state.hero
+            self._current_room_index = self._game_state.current_level - 1
+
+            # Recriar dungeon (necessário porque não salvamos as rooms)
+            floors = 5
+            self._dungeon = [
+                LevelFactory.create_room(level=i) for i in range(1, floors + 1)
+            ]
+
             self._cli.display_message(
-                "Erro: Save corrompido ou inexistente! Iniciando novo jogo..."
+                f"Jogo carregado! Bem-vindo de volta, {self._hero.name}."
             )
+            self.run_exploration_loop()
+
+        except Exception as e:
+            self._cli.display_message(f"Erro ao carregar o jogo: {e}")
             self.setup_new_game()
-            return
-
-        self._hero = loaded_data["hero"]
-        self._dungeon = loaded_data["dungeon"]
-        self._current_room_index = loaded_data["current_room_index"]
-
-        self._cli.display_message(
-            f"Jogo carregado! Bem-vindo de volta, {self._hero.name}."
-        )
-        self.run_exploration_loop()
 
     # LOOPS:
 

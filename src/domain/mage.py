@@ -102,18 +102,20 @@ class Mage(Hero):
     def damage_received(self, value: int, strike_element: Element) -> None:
         super().damage_received(value, strike_element)
         self.current_life -= int(value * strike_element.multiplier(self.element))
-    
+
     def meditate(self, target: Entity = None) -> str:
         """
         Heals half of the mage's maximum mana points.
         Has an 3 turns cooldown.
         """
         if self.meditate_cooldown > 0:
-            raise ValueError(f"{self.name} precisa esperar mais {self.meditate_cooldown} turno(s) para meditar novamente!")
+            raise ValueError(
+                f"{self.name} precisa esperar mais {self.meditate_cooldown} turno(s) para meditar novamente!"
+            )
 
         mana_recovery = int(self.max_mana / 2)
         self.current_mana += mana_recovery
-        self.meditate_cooldown = 3 #RESETS COOLDOWN.
+        self.meditate_cooldown = 3  # RESETS COOLDOWN.
 
         return f"{self.name} se concentra e medita. Recupera {mana_recovery} de MP!"
 
@@ -131,7 +133,9 @@ class Mage(Hero):
         mana_cost = 50
 
         if self.current_mana < mana_cost:
-            raise ValueError (f"{self.name} tentou conjurar Magia Ancestral, mas não tem mana o suficiente para isso.")
+            raise ValueError(
+                f"{self.name} tentou conjurar Magia Ancestral, mas não tem mana o suficiente para isso."
+            )
 
         self.current_mana -= mana_cost
         damage = (self.attack * 3) + 50

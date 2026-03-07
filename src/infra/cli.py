@@ -795,7 +795,6 @@ class CLI:
             )
 
             if escolha_idx == 0:
-
                 # Extrai apenas as descrições do dicionário para mostrar na tela
                 textos_ataques = [
                     info["description"] for info in acoes_do_heroi.values()
@@ -1015,6 +1014,7 @@ class CLI:
         print(f"\n{msg}")
         print("\n[Pressione ENTER para continuar...]")
         CLI._ler_tecla()
+
 
 # ====================================================================
 # ÁREA DE TESTES VISUAIS E SIMULAÇÃO DE FLUXO PARA A EQUIPE

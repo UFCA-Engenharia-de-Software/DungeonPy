@@ -145,4 +145,6 @@ class Room(DescriptionMixin):
     def remove_defeated_monster(self) -> None:
         """Removes a monster when it gets defeated by the hero."""
         if self._monsters:
-            self._monsters.pop(0) #GAME MANAGER CANNOT ACCESS A PROTECTED ATTRIBUTE FROM OUTSIDE.
+            self._monsters.pop(
+                0
+            )  # GAME MANAGER CANNOT ACCESS A PROTECTED ATTRIBUTE FROM OUTSIDE.

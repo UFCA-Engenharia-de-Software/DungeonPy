@@ -80,7 +80,12 @@ class Inventory:
             "available_capacity": self.get_available_weight_capacity(),
             "item_count": len(self._items),
             "items": [
-                {"name": item.name, "weight": item.weight} for item in self._items
+                {
+                    "name": item.name,
+                    "weight": item.weight,
+                    "description": item.get_description(),
+                }
+                for item in self._items
             ],
         }
 

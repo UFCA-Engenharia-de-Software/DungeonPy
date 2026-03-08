@@ -4,28 +4,29 @@ import time
 
 
 class Color:
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
-    RESET = "\033[0m"
+    # --- Cores Universais (Forçando tons específicos da paleta de 256 cores) ---
+    RED = "\033[38;5;196m"  # Vermelho vivo e vibrante
+    GREEN = "\033[38;5;46m"  # Verde neon/claro
+    YELLOW = "\033[38;5;226m"  # Amarelo canário puro (nunca vai virar marrom!)
+    BLUE = "\033[38;5;39m"  # Azul claro vibrante
+    MAGENTA = "\033[38;5;201m"  # Magenta/Rosa choque
+    CYAN = "\033[38;5;51m"  # Ciano brilhante
+    RESET = "\033[0m"  # Reseta para a cor padrão do terminal do usuário
 
     # --- Cores Escuras / Clássicas ---
-    DARK_RED = "\033[31m"
-    DARK_GREEN = "\033[32m"
-    DARK_BLUE = "\033[34m"
+    DARK_RED = "\033[38;5;124m"  # Vermelho sangue escuro
+    DARK_GREEN = "\033[38;5;28m"  # Verde musgo
+    DARK_BLUE = "\033[38;5;21m"  # Azul marinho profundo
 
     # --- Cores Neutras ---
-    WHITE = "\033[97m"
-    GRAY = "\033[90m"  # Ótimo para textos de sistema ou dicas
-    BLACK = "\033[30m"
+    WHITE = "\033[38;5;231m"  # Branco puro absoluto
+    GRAY = "\033[38;5;244m"  # Cinza médio perfeito para bordas
+    BLACK = "\033[38;5;16m"  # Preto puro
 
-    # --- Cores Especiais (Tabela de 256 cores) ---
-    BROWN = "\033[38;5;130m"  # Um marrom real, perfeito para portas, baús e mochilas
-    ORANGE = "\033[38;5;208m"  # Laranja vibrante (fogo, dano crítico)
-    PURPLE = "\033[38;5;93m"  # Um roxo mais sombrio e fechado que o Magenta
+    # --- Cores Especiais ---
+    BROWN = "\033[38;5;130m"  # Marrom couro
+    ORANGE = "\033[38;5;208m"  # Laranja fogo
+    PURPLE = "\033[38;5;93m"  # Roxo sombrio
 
 
 class CLI:
@@ -146,7 +147,7 @@ class CLI:
                 return indice_atual
 
     @staticmethod
-    def show_main_menu() -> str:
+    def show_main_menu(has_save: bool = False) -> str:
         """Exibe o menu principal com a arte do jogo e subtítulo."""
 
         art_colored = f"""
@@ -168,13 +169,79 @@ class CLI:
 
         arte_completa = f"{art_colored}\n{subtitle_colored}\n\n{version_colored}\n"
 
-        opcoes = ["Iniciar Nova Jornada", "Sair do Jogo"]
+        if has_save:
+            opcoes = [
+                f"{Color.GREEN}Continuar Jornada{Color.RESET}",
+                f"{Color.YELLOW}Iniciar Nova Jornada{Color.RESET}",
+                f"{Color.RED}Sair do Jogo{Color.RESET}",
+            ]
+        else:
+            opcoes = [
+                f"{Color.YELLOW}Iniciar Nova Jornada{Color.RESET}",
+                f"{Color.RED}Sair do Jogo{Color.RESET}",
+            ]
 
         escolha_idx = CLI._mostrar_menu_interativo(
-            "M E N U   P R I N C I P A L", opcoes, arte_ascii=arte_completa
+            f"{Color.BROWN}M E N U   P R I N C I P A L{Color.RESET}",
+            opcoes,
+            arte_ascii=arte_completa,
         )
 
-        return "1" if escolha_idx == 0 else "2"
+        if has_save:
+            if escolha_idx == 0:
+                return "2"  # Retorna "2" (Load Game)
+
+            if escolha_idx == 1:
+                return "1"  # Retorna "1" (New Game)
+
+            if escolha_idx == 2:
+                return "3"  # Retorna "3" (Quit)
+        else:
+            if escolha_idx == 0:
+                return "1"  # Retorna "1" (New Game)
+
+            if escolha_idx == 1:
+                return "3"  # Retorna "3" (Quit)
+
+    @staticmethod
+    def show_save_notification(save_info: dict) -> None:
+        """Exibe notificação de save com informações do progresso."""
+
+        CLI._limpar_tela()
+        print(f"\n{Color.GREEN}{'=' * 60}{Color.RESET}")
+        print(f"{Color.GREEN}{'JOGO SALVO COM SUCESSO':^60}{Color.RESET}")
+        print(f"{Color.GREEN}{'=' * 60}{Color.RESET}")
+
+        print(
+            f"\n{Color.WHITE}Progresso: {Color.CYAN}{save_info['progresso']}{Color.RESET}"
+        )
+        print(
+            f"{Color.WHITE}Salvo em: {Color.GRAY}{save_info['save_date'][:19].replace('T', ' ')}{Color.RESET}"
+        )
+
+        print(
+            f"\n{Color.YELLOW}[Pressione ENTER para continuar]{Color.RESET}".center(60)
+        )
+        CLI._clear_keyboard_buffer()
+        CLI._ler_tecla()
+
+    @staticmethod
+    def confirm_overwrite_save() -> bool:
+        """
+        Alerta o jogador que já existe um save e pergunta se ele deseja sobrescrever.
+        Retorna True se ele aceitar apagar o save, False se ele desistir.
+        """
+        opcoes = [
+            f"{Color.DARK_RED}Sim, apagar meu progresso e recomeçar{Color.RESET}",
+            f"{Color.GREEN}Não, manter meu jogo salvo{Color.RESET}",
+        ]
+
+        idx = CLI._mostrar_menu_interativo(
+            titulo=f"{Color.RED}AVISO CRÍTICO{Color.RESET}: Você já possui um {Color.GREEN}jogo salvo!{Color.RESET}\nIniciar uma nova jornada {Color.RED}apagará{Color.RESET} seu progresso atual para sempre.{Color.RESET}",
+            opcoes=opcoes,
+        )
+
+        return idx == 0
 
     @staticmethod
     def ask_hero_info() -> tuple[str, str]:
@@ -384,107 +451,83 @@ class CLI:
         _tocar_cena(
             [
                 (
-                    "Narrador: O Herói adentra a uma pequena sala. Ao longe, ele avista a princesa.",
+                    "Narrador: O Herói entra na sala arrastando a perna esquerda. O cheiro de poeira antiga empesteia o ar.",
                     0.04,
                 ),
                 (
-                    "Narrador: Seu corpo parecia estar intacto, mas o silêncio do lugar era ensurdecedor...",
-                    0.06,
+                    "Narrador: A princesa está encostada na parede, imóvel. A cabeça caída para o lado.",
+                    0.05,
                 ),
                 (
-                    f"{hero_name}: Eu... eu finalmente cheguei... depois de tanto tempo...",
+                    f"{hero_name}: (Ofegante) Eu... eu finalmente cheguei. A porta de ferro... quase acabou comigo.",
                     0.05,
                 ),
             ]
         )
 
-        # Ato 2: A Descoberta
+        # Ato 2: O Desabafo
         _tocar_cena(
             [
                 (
-                    "Narrador: Ele se aproxima, tentando chamá-la de longe. Mas quanto mais perto chegava,",
+                    "Narrador: Ele se deixa cair de joelhos, exausto. A arma retumbou ao bater no chão de pedra.",
                     0.04,
                 ),
                 (
-                    "Narrador: mais o frio da sala o consumia. Ele se ajoelha próximo ao seu rosto.",
+                    f"{hero_name}: Eu perdi minha bota na armadilha do segundo andar. Imagina... o grande herói chegando descalço.",
+                    0.06,
+                ),
+                (
+                    f"{hero_name}: Mas eu precisava chegar. Eu precisava ver se você...",
                     0.05,
                 ),
                 (
-                    f"{hero_name}: Ei, princesa... eu sei que você está bem, não tá?",
+                    "Narrador: Ele estende a mão trêmula, com medo de tocá-la. O coração bate na garganta.",
+                    0.05,
+                ),
+            ]
+        )
+
+        # Ato 3: A Quebra de Expectativa
+        _tocar_cena(
+            [
+                (
+                    "Princesa: (Com a voz fraca, mas em tom de repreensão) Você perdeu a bota de couro que eu te dei?",
+                    0.05,
+                ),
+                (
+                    "Narrador: O herói congela. Ela abre lentamente um dos olhos, respirando fundo.",
+                    0.04,
+                ),
+                (
+                    f"{hero_name}: Você... você tá viva! Eu achei que...",
+                    0.04,
+                ),
+                (
+                    "Princesa: Acha que eu ia deixar um lorde das trevas me matar antes de eu te cobrar o dinheiro daquela bota?",
                     0.06,
                 ),
             ]
         )
 
-        # Ato 3: O Desespero
+        # Ato 4: A Conexão
         _tocar_cena(
             [
                 (
-                    "Narrador: Os olhos dela estavam fechados. O herói estava cansado demais para raciocinar.",
-                    0.05,
-                ),
-                (f"{hero_name}: Ei, por favor, acorda... acorda, por favor.", 0.05),
-                (f"{hero_name}: Eu não posso... não posso voltar sem você.", 0.07),
-                (
-                    "Narrador: O desespero tomou conta. Ele tocou sua mão, mas nada acontecia.",
-                    0.06,
-                ),
-            ]
-        )
-
-        # Ato 4: As Memórias
-        _tocar_cena(
-            [
-                (f"{hero_name}: Você não pode ter... por favor, não.", 0.06),
-                (f"{hero_name}: Você é forte. É a mais forte que eu conheço.", 0.05),
-                (
-                    f"{hero_name}: Lembra de quando brincávamos? Você sempre foi a durona...",
+                    f"{hero_name}: (Rindo, limpando o rosto sujo de terra) Pode cobrar. Com juros.",
                     0.05,
                 ),
                 (
-                    f"{hero_name}: Sempre sabia o que me dizer quando eu estava mal.",
+                    f"{hero_name}: Eu só... eu não ia conseguir voltar sem você. Você sabe disso, né?",
+                    0.05,
+                ),
+                (
+                    "Princesa: Eu sei. Você é um desastre sem mim.",
                     0.05,
                 ),
             ]
         )
 
-        # Ato 5: A Declaração
-        _tocar_cena(
-            [
-                (
-                    f"{hero_name}: Sempre ajudou todo mundo...até alguém como eu... não importa o que falassem,",
-                    0.05,
-                ),
-                (
-                    f"{hero_name}: ou o que diziam sobre mim. Você nunca deixou as pessoas tirarem de você o que você era,",
-                    0.05,
-                ),
-                (
-                    f"{hero_name}: não importa o quão difícil fosse, o quanto zombavam,",
-                    0.05,
-                ),
-                (
-                    f"{hero_name}: você nunca deixou de ajudar aos outros, de me ajudar.",
-                    0.05,
-                ),
-            ]
-        )
-
-        # Ato 6: A Despedida
-        _tocar_cena(
-            [
-                (f"{hero_name}: Eu deveria ter ficado mais tempo com você...", 0.07),
-                (f"{hero_name}: Não deveria ter me afastado...", 0.07),
-                (f"{hero_name}: Não deveria ter te deixado sozinha...", 0.08),
-                (
-                    f"{hero_name}: Talvez... a força que eu ganhei para chegar até aqui",
-                    0.05,
-                ),
-                (f"{hero_name}: tenha vindo de você.", 0.06),
-            ]
-        )
-
-        # Ato 7: O Fim (Única cena sem o ler_tecla no loop, tratado manualmente)
+        # Ato 5: O Fim
         CLI._limpar_tela()
         print("=" * 60)
         print(f"{' A ÚLTIMA SALA ':^60}")
@@ -492,7 +535,8 @@ class CLI:
         print(arte_vela)
         print("\n\n")
         CLI._imprimir_lento(
-            f"{hero_name}: Então... por favor... não me deixe agora.", 0.1
+            "Narrador: Ele segura a mão dela. Dessa vez, o aperto é devolvido com firmeza. O frio da masmorra não importa mais.\n",
+            0.05,
         )
         time.sleep(3)  # Pausa longa dramática no escuro
 
@@ -521,7 +565,7 @@ class CLI:
         print(f"{Color.CYAN}{'Cicero Jesus Da Silva Gomes'.center(60)}{Color.RESET}")
         print(f"{Color.RED}{'Leôncio Ferreira Flores Neto'.center(60)}{Color.RESET}")
         print(f"{Color.BROWN}{'Paulo Gabriel Leite Landim'.center(60)}{Color.RESET}")
-        print(f"{Color.PURPLE}{'Salomão Rodrigues Silva'.center(60)}{Color.RESET}")
+        print(f"{Color.DARK_RED}{'Salomão Rodrigues Silva'.center(60)}{Color.RESET}")
 
         time.sleep(0.5)
         print(
@@ -690,6 +734,7 @@ class CLI:
         opcoes = [
             f"{Color.GREEN}Avançar para próxima sala{Color.RESET}",
             f"{Color.BROWN}Ver Inventário{Color.RESET}",
+            f"{Color.BLUE}Salvar Jogo{Color.RESET}",
             f"{Color.GRAY}Ficha de personagem (em breve){Color.RESET}",
         ]
 
@@ -935,6 +980,27 @@ class CLI:
                     titulo=f"{Color.BROWN}AÇÕES  —  {Color.YELLOW}{item_name}{Color.RESET}",
                     opcoes=action_options,
                 )
+                if action_index == 1:
+                    CLI._limpar_tela()
+                    item_description = selected_item.get(
+                        "description", "Fé nas malucas, pode dar bom ou ruim."
+                    )
+
+                    print(f"{Color.BROWN}=" * 60 + Color.RESET)
+                    print(f"{Color.YELLOW}{item_name:^60}{Color.RESET}")
+                    print(f"{Color.BROWN}=" * 60 + Color.RESET)
+
+                    # Imprime a descrição centralizada e bonita
+                    print(f"\n{Color.CYAN}{item_description.center(60)}{Color.RESET}\n")
+
+                    CLI._clear_keyboard_buffer()
+                    input(
+                        f"{Color.GRAY}[Pressione ENTER para voltar às ações]{Color.RESET}".center(
+                            60 + len(Color.GRAY) + len(Color.RESET)
+                        )
+                    )
+
+                    continue
 
                 if action_index == VOLTAR_INVENTARIO:
                     break  # ← sai só do loop interno; loop externo continua
@@ -1007,13 +1073,23 @@ class CLI:
         CLI._ler_tecla()
 
     @staticmethod
-    def display_message(msg: str) -> None:
+    def display_message(message: str) -> None:
         """
         Exibe mensagens rápidas do sistema e pausa a tela.
         """
-        print(f"\n{msg}")
-        print("\n[Pressione ENTER para continuar...]")
-        CLI._ler_tecla()
+        print("\n" + f"{Color.BROWN}=" * 60 + Color.RESET)
+
+        # Centraliza o texto bonitinho
+        print(f"\n{Color.CYAN}{message.center(60)}{Color.RESET}\n")
+
+        print(f"{Color.BROWN}=" * 60 + Color.RESET)
+
+        CLI._clear_keyboard_buffer()
+        input(
+            f"\n{Color.GRAY}[Pressione ENTER para continuar]{Color.RESET}".center(
+                60 + len(Color.GRAY) + len(Color.RESET)
+            )
+        )
 
 
 # ====================================================================
@@ -1022,9 +1098,10 @@ class CLI:
 # ====================================================================
 if __name__ == "__main__":
     # --- PASSO 1: MENU PRINCIPAL ---
-    acao = CLI.show_main_menu()
 
+    acao = CLI.show_main_menu(True)
     if acao == "1":
+        CLI.confirm_overwrite_save()
         CLI.show_exploration_menu()
 
         CLI.print_room_description(

@@ -3,6 +3,7 @@ from domain.element import Element
 from domain.entity import Entity
 from domain import state
 from domain.ranged_weapon import RangedWeapon
+from domain.inventory import Inventory
 import random
 
 
@@ -32,6 +33,7 @@ class Archer(Hero):
         speed: int,
         current_status: state = None,
         element: Element = Element.NEUTRAL,
+        inventory: Inventory = None,
         max_ammo: int = 10,
         current_ammo: int = 0,
         dodge: bool = False,
@@ -39,7 +41,14 @@ class Archer(Hero):
         is_aiming: bool = False,
     ):
         super().__init__(
-            name, max_life, current_life, attack, speed, current_status, element
+            name,
+            max_life,
+            current_life,
+            attack,
+            speed,
+            current_status,
+            element,
+            inventory,
         )
 
         self.max_ammo = max_ammo
@@ -189,7 +198,7 @@ class Archer(Hero):
         if self.is_aiming:
             self.is_aiming = False
 
-    def upgrade(self, points: int, choice: int) -> None:
+    def upgrade(self, points: int) -> None:
         """Upgrade specific attributes (attack, speed)
         It`s ignoring the parent class logic for game design choice and otimization of time
         """

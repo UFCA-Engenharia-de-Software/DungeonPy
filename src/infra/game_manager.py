@@ -108,7 +108,12 @@ class GameManager:
 
         try:
             self._repository.save(self._game_state)
-            self._cli.display_message("Jogo salvo com sucesso nas sombras da masmorra!")
+
+            save_info = self._game_state.get_progress_info()
+
+            save_info["save_date"] = self._game_state.save_date
+
+            self._cli.show_save_notification(save_info)
         except Exception as e:
             self._cli.display_message(f"Erro ao salvar o jogo: {e}")
 

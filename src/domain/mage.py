@@ -100,8 +100,11 @@ class Mage(Hero):
             raise ValueError("No equipped weapon!")
 
     def damage_received(self, value: int, strike_element: Element) -> None:
-        super().damage_received(value, strike_element)
-        self.current_life -= int(value * strike_element.multiplier(self.element))
+        """O Mago não possui defesa física. Recebe o dano elemental direto."""
+        multiplier = strike_element.multiplier(self.element)
+        final_damage = int(value * multiplier)
+
+        self.current_life -= final_damage
 
     def meditate(self, target: Entity = None) -> str:
         """
@@ -138,7 +141,7 @@ class Mage(Hero):
             )
 
         self.current_mana -= mana_cost
-        damage = (self.attack * 3) + 50
+        damage = self.attack * 3
         target.damage_received(damage, Element.NEUTRAL)
 
         return f"{self.name} canaliza energia pura e lança MAGIA ANCESTRAL em {target.name}! {damage} de dano!"

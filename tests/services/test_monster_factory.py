@@ -5,6 +5,7 @@ from domain.monster import Monster
 from domain.weapon import Weapon
 from domain.ranged_weapon import RangedWeapon
 from domain.grimoire import Grimoire
+from unittest.mock import patch
 
 
 def test_create_monster_returns_instance():
@@ -17,7 +18,7 @@ def test_monster_scaling_attributes():
     level = 3
     monster = MonsterFactory.create_monster(level=level)
 
-    assert monster.max_life == 50 + (level * 15)
+    assert monster.max_life == 70 + (level * 15)
     assert monster.attack == 10 + (level * 5)
     assert monster.speed == 5 + level
 
@@ -55,7 +56,8 @@ def test_monster_loot_is_populated_on_creation():
     assert len(monster.loot) > 0
 
 
-def test_monster_loot_contains_healing_potion():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_monster_loot_contains_healing_potion(mock_random):
     """Todo monstro deve carregar Poção de Cura no loot."""
     monster = MonsterFactory.create_monster(level=1, element=Element.POISON)
 
@@ -63,7 +65,8 @@ def test_monster_loot_contains_healing_potion():
     assert "Poção De Cura" in names
 
 
-def test_monster_loot_contains_mana_potion():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_monster_loot_contains_mana_potion(mock_random):
     """Todo monstro deve carregar Poção de Mana no loot."""
     monster = MonsterFactory.create_monster(level=1, element=Element.LIGHTNING)
 
@@ -103,7 +106,8 @@ def test_get_loot_only_after_death():
     assert len(monster.get_loot()) > 0
 
 
-def test_boss_loot_contains_fixed_drops():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_boss_loot_contains_fixed_drops(mock_random):
     """Boss deve receber ao menos as poções fixas no loot."""
     boss = MonsterFactory.create_boss(level=3, element=Element.FIRE)
 

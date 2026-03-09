@@ -6,6 +6,7 @@ from domain.ranged_weapon import RangedWeapon
 from domain.grimoire import Grimoire
 from domain.consumable_item import ConsumableItem
 from domain.element import Element
+from unittest.mock import patch
 
 
 def test_base_packs_return_dict():
@@ -175,7 +176,8 @@ def test_grimoire_drops_have_element_and_mana():
 # Tests for balancing of itens and drops
 
 
-def test_get_loot_for_monster_always_contains_fixed_drops():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_get_loot_for_monster_always_contains_fixed_drops(mock_random):
     """Every monster must drop a Health Potion and a Mana Potion."""
     loot = ItemsFactory.get_loot_for_monster("Goblin")
 
@@ -192,7 +194,8 @@ def test_get_loot_for_monster_known_includes_equipment():
     assert len(equipment) >= 1
 
 
-def test_get_loot_for_monster_unknown_returns_only_fixed_drops():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_get_loot_for_monster_unknown_returns_only_fixed_drops(mock_random):
     """Unknown monsters (boss-generated, for example) only receive the fixed potions"""
     loot = ItemsFactory.get_loot_for_monster("Monstro Inexistente")
 
@@ -200,7 +203,8 @@ def test_get_loot_for_monster_unknown_returns_only_fixed_drops():
     assert all(isinstance(item, ConsumableItem) for item in loot)
 
 
-def test_get_loot_for_monster_returns_independent_lists():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_get_loot_for_monster_returns_independent_lists(mock_random):
     """
     Two calls to the same monster must not share the same list nor the same objects
     this prevents cross-mutation between fights.
@@ -213,7 +217,8 @@ def test_get_loot_for_monster_returns_independent_lists():
     assert loot_a[0] is not loot_b[0]
 
 
-def test_get_loot_for_monster_all_known_monsters():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_get_loot_for_monster_all_known_monsters(mock_random):
     """All monsters in DROP_TABLES return loot with at least 3 items (2 potions + 1 equipment)."""
     for monster_name in ItemsFactory.DROP_TABLES:
         loot = ItemsFactory.get_loot_for_monster(monster_name)
@@ -222,7 +227,8 @@ def test_get_loot_for_monster_all_known_monsters():
         )
 
 
-def test_drop_distribution_is_balanced():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_drop_distribution_is_balanced(mock_random):
     """
     Each equipment type (weapon, ranged_weapon, grimoire) must have exactly 5 associated monsters."
     """
@@ -242,7 +248,8 @@ def test_drop_distribution_is_balanced():
     )
 
 
-def test_fixed_drops_mana_potion_has_correct_recovery_type():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_fixed_drops_mana_potion_has_correct_recovery_type(mock_random):
     """Mana potion in the fixed drops should have recovery_type='mana'."""
     drops = ItemsFactory._fixed_drops()
     mana_potions = [
@@ -254,7 +261,8 @@ def test_fixed_drops_mana_potion_has_correct_recovery_type():
     assert mana_potions[0].recovery_type == "mana"
 
 
-def test_fixed_drops_life_potion_has_correct_recovery_type():
+@patch("services.items_factory.random.random", return_value=0.1)
+def test_fixed_drops_life_potion_has_correct_recovery_type(mock_random):
     """Healing potion in the fixed drops should have recovery_type='life'."""
     drops = ItemsFactory._fixed_drops()
     life_potions = [

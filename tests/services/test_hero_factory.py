@@ -84,9 +84,9 @@ class TestGetClassDifferentials:
         assert "attack" in mage["upgradeable_attributes"]
         assert "max_mana" in mage["upgradeable_attributes"]
 
-    def test_mage_element_is_fire(self):
+    def test_mage_element_is_neutral(self):
         mage = HeroFactory.get_class_differentials()["mage"]
-        assert mage["element"] == Element.FIRE.value
+        assert mage["element"] == Element.NEUTRAL.value
 
     def test_archer_stats_match_constants(self):
         archer = HeroFactory.get_class_differentials()["archer"]

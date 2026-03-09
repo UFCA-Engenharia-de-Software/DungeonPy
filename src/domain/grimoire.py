@@ -21,6 +21,7 @@ class Grimoire(Weapon):
         element: Element,
         magic_power: int,
         mana_cost: int,
+        description: str = "",
         weight: float = 2.0,
     ):
         if not isinstance(element, Element):

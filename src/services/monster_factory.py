@@ -38,7 +38,7 @@ class MonsterFactory:
         name = random.choice(cls.BASE_NAMES[element])
 
         # Progressive scaling
-        max_life = 50 + (level * 15)
+        max_life = 70 + (level * 15)
         attack = 10 + (level * 5)
         speed = 5 + level
 
@@ -73,7 +73,7 @@ class MonsterFactory:
         """
         name = f"Guardião Supremo de {element.name.title()}"
 
-        max_life = 120 + (level * 25)
+        max_life = 130 + (level * 25)
         attack = 25 + (level * 8)
         speed = 10 + level
 

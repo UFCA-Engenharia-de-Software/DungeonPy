@@ -56,7 +56,7 @@ def test_ultimate():
 
     jotinha.ultimate(monstrin)
 
-    assert jotinha.current_life == 90
+    assert jotinha.current_life == 85
     assert jotinha.current_ammo == 7
     assert monstrin.current_life == 36
 
@@ -153,7 +153,7 @@ def test_attempted_dodge_success_in_damage_receive():
     archer_generic = Archer(
         name="gavião_do_grau", max_life=200, current_life=100, attack=20, speed=30
     )
-    with patch("domain.archer.random.randint", return_value=50):
+    with patch("domain.archer.random.randint", return_value=15):
         #
         archer_generic.damage_received(10, Element.NEUTRAL)
 
@@ -166,7 +166,7 @@ def test_attempted_dodge_fail_in_damage_receive():
         name="gavião_do_grau", max_life=200, current_life=100, attack=20, speed=30
     )
 
-    with patch("domain.archer.random.randint", return_value=-1):
+    with patch("domain.archer.random.randint", return_value=50):
         archer_generic.damage_received(10, Element.NEUTRAL)
 
     assert archer_generic.current_life == 90

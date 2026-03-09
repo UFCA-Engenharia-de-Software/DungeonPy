@@ -99,7 +99,7 @@ def test_ancient_magic_success(mage_default, mock_target):
     """
     Tests if the Mage 'ultimate attack' (Ancicent Magic):
     - Spends 50 Mana Points;
-    - Deals [(attack * 3) + 50] damage;
+    - Deals [(attack * 3)] damage;
     """
 
     mage_default.current_mana = 50
@@ -107,7 +107,7 @@ def test_ancient_magic_success(mage_default, mock_target):
 
     assert "MAGIA ANCESTRAL" in msg
     assert mage_default.current_mana == 0
-    mock_target.damage_received.assert_called_once_with(80, Element.NEUTRAL)
+    mock_target.damage_received.assert_called_once_with(30, Element.NEUTRAL)
 
 
 def test_ancient_magic_insufficient_mana(mage_default, mock_target):

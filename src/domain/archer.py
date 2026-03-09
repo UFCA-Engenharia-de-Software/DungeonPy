@@ -156,9 +156,8 @@ class Archer(Hero):
             self.reset_dodge()
             return
 
-        buffer = int(random.randint((-self.speed), (self.speed + (self.speed // 2))))
-        if buffer > 0:
-            self.dodge = True
+        chance = random.randint(1, 100)
+        self.dodge = chance <= self.speed
 
     def ultimate(self, target: Entity):
         """Archer's special attack. Costs lots of arrows and a bit of life, deals lots of damage."""
@@ -168,7 +167,7 @@ class Archer(Hero):
         if self.current_ammo < ammo_cost:
             return f"{self.name} não tem munição suficiente para isso."
 
-        life_recoil = 10
+        life_recoil = 15
         if self.current_life <= life_recoil:
             return f"{self.name} está muito fraco e não aguentaria o recuo do ataque."
 

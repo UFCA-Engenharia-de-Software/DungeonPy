@@ -79,7 +79,7 @@ class Warrior(Hero):
             self._reset_defend()
             return
 
-        self.current_life -= max(0, int(final_damage - (self.shield + self.armor)))
+        self.current_life -= max(0, int(final_damage - self.armor))
 
     def upgrade(self, points: int) -> None:
         """Upgrade specific attributes (shield, armor)."""
@@ -95,8 +95,8 @@ class Warrior(Hero):
         if self.in_test:
             return
 
-        buffer = random.randint((-self.shield), self.shield)
-        self.defend = buffer > 0
+        chance = random.randint(1, 100)
+        self.defend = chance <= self.shield
 
     def _reset_defend(self):
         """Reset defense state after handling damage"""

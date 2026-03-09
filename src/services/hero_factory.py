@@ -11,8 +11,8 @@ WARRIOR_STATS = {
     "max_life": 150,
     "attack": 30,
     "speed": 10,
-    "shield": 20,
-    "armor": 15,
+    "shield": 15,
+    "armor": 2,
     "element": Element.NEUTRAL,
 }
 
@@ -22,7 +22,7 @@ MAGE_STATS = {
     "speed": 15,
     "max_mana": 100,
     "current_mana": 100,
-    "element": Element.FIRE,
+    "element": Element.NEUTRAL,
 }
 
 ARCHER_STATS = {

@@ -100,7 +100,7 @@ def test_damage_received():
 
     sample_warrior.in_test = True
     sample_monster.strike(sample_warrior)
-    assert sample_warrior.current_life == 20
+    assert sample_warrior.current_life == 10
     assert not sample_warrior.defend
 
 

@@ -118,7 +118,7 @@ def test_upgrade():
         is_aiming=False,
     )
 
-    archer_generic.upgrade(4, 2)
+    archer_generic.upgrade(4)
 
     assert archer_generic.speed == 32
     assert archer_generic.attack == 22

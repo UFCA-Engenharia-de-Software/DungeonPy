@@ -115,7 +115,7 @@ def test_get_hero_status_returns_correct_dict():
 
     status = hero.get_hero_status()
 
-    # Note: Entity.name applica .title() ao nome
+    # Note: Entity.name apply .title() in name
     assert status["name"] == "Testhero"
     assert status["current_life"] == 80
     assert status["max_life"] == 100
@@ -131,7 +131,7 @@ def test_get_hero_status_with_equipped_weapon():
 
     hero = ConcreteHero("TestHero", 100, 100, 15, 5)
 
-    # Simular uma arma equipada
+    # equipped weapon
     fake_weapon = Mock()
     fake_weapon.name = "Espada Mágica"
     hero._equipped_weapon = fake_weapon
@@ -139,3 +139,61 @@ def test_get_hero_status_with_equipped_weapon():
     status = hero.get_hero_status()
 
     assert status["equipped_weapon"] == "Espada Mágica"
+
+
+def test_equip_weapon_with_allowed_class_succeeds():
+    """Herói da classe permitida consegue equipar a arma."""
+    from domain.weapon import Weapon
+    from domain.warrior import Warrior
+
+    warrior = Warrior("Arthur", 100, 100, 20, 10)
+    sword = Weapon(name="Espada", base_damage=15)
+    warrior.equip_weapon(sword)
+    assert warrior.equipped_weapon is sword
+
+
+def test_equip_weapon_wrong_class_raises_type_error():
+    """Herói de classe errada recebe TypeError ao tentar equipar."""
+    from domain.weapon import Weapon
+
+    hero = ConcreteHero("Mago Sem Arma", 100, 100, 10, 5)
+    sword = Weapon(name="Espada", base_damage=15)  # allowed_class = ["Warrior"]
+
+    with pytest.raises(TypeError):
+        hero.equip_weapon(sword)
+
+
+def test_equip_weapon_error_message_contains_allowed_class():
+    """Error mensagem, talk which class can equip weapon"""
+    from domain.weapon import Weapon
+
+    hero = ConcreteHero("Intruso", 100, 100, 10, 5)
+    sword = Weapon(name="Espada Longa", base_damage=20)
+
+    with pytest.raises(TypeError, match="Warrior"):
+        hero.equip_weapon(sword)
+
+
+def test_equip_ranged_weapon_wrong_class_raises():
+    """Warrior not equip ranged_weapon."""
+    from domain.ranged_weapon import RangedWeapon
+    from domain.warrior import Warrior
+
+    warrior = Warrior("Guerreiro", 150, 150, 30, 10)
+    bow = RangedWeapon(name="Arco", base_damage=15, ammo_required=1)
+
+    with pytest.raises(TypeError):
+        warrior.equip_weapon(bow)
+
+
+def test_equip_grimoire_wrong_class_raises():
+    """Warrior não pode equipar grimório."""
+    from domain.grimoire import Grimoire
+    from domain.element import Element
+    from domain.warrior import Warrior
+
+    warrior = Warrior("Guerreiro", 150, 150, 30, 10)
+    grimoire = Grimoire(name="Tomo", element=Element.FIRE, magic_power=20, mana_cost=5)
+
+    with pytest.raises(TypeError):
+        warrior.equip_weapon(grimoire)

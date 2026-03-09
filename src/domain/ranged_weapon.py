@@ -37,6 +37,7 @@ class RangedWeapon(Weapon):
         super().__init__(name, base_damage, description, weight, element)
         self.ammo_required = ammo_required
         self.hit_probability = hit_probability
+        self.allowed_class = ["Archer"]
 
     @property
     def ammo_required(self) -> int:

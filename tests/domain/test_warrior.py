@@ -1,3 +1,4 @@
+import pytest
 from domain.warrior import Warrior
 from domain.element import Element
 from domain.monster import Monster
@@ -219,3 +220,138 @@ def test_get_actions():
             "method": sample_warrior.to_rage,
         },
     }
+
+
+def test_strike_without_weapon_raises_value_error():
+    """Warrior without weapon is value error for attack."""
+    sample_warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+    sample_monster = Monster(
+        name="Goblin",
+        max_life=50,
+        attack=10,
+        speed=5,
+        element=Element.NEUTRAL,
+        loot=[],
+        description="pequeno goblin",
+    )
+
+    with pytest.raises(ValueError, match="[Aa]rma"):
+        sample_warrior.strike(sample_monster)
+
+
+def test_heavy_strike_without_weapon_raises_value_error():
+    """Warrior without weapon is value error for heavy strike."""
+    sample_warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+    sample_monster = Monster(
+        name="Goblin",
+        max_life=50,
+        attack=10,
+        speed=5,
+        element=Element.NEUTRAL,
+        loot=[],
+        description="pequeno goblin",
+    )
+
+    with pytest.raises(ValueError, match="[Aa]rma"):
+        sample_warrior.heavy_strike(sample_monster)
+
+
+def test_warrior_cannot_equip_ranged_weapon():
+    """Warrior can't equip raned weapon."""
+    from domain.ranged_weapon import RangedWeapon
+
+    warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+    bow = RangedWeapon(name="Arco Teste", base_damage=10, ammo_required=1)
+
+    with pytest.raises(TypeError):
+        warrior.equip_weapon(bow)
+
+
+def test_warrior_cannot_equip_grimoire():
+    """Warrior can't equip grimoire."""
+    from domain.grimoire import Grimoire
+    from domain.element import Element
+
+    warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+    grimoire = Grimoire(name="Tomo", element=Element.FIRE, magic_power=20, mana_cost=5)
+
+    with pytest.raises(TypeError):
+        warrior.equip_weapon(grimoire)
+
+
+def test_successful_defend_prevents_damage():
+    """When Warrior blocks successfully, life should remain unchanged."""
+    sample_warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+    sample_monster = Monster(
+        name="Fire Dragon",
+        max_life=100,
+        attack=25,
+        speed=10,
+        element=Element.FIRE,
+        loot=[],
+        description="dragão",
+    )
+
+    sample_warrior.in_test = True
+    sample_warrior.defend = True
+    sample_monster.strike(sample_warrior)
+
+    assert sample_warrior.current_life == 100
+    assert sample_warrior.defend is False  # defend resets after block
+
+
+def test_no_defend_applies_damage():
+    """When Warrior does not block, life should decrease."""
+    sample_warrior = Warrior(
+        name="Errant Knight",
+        max_life=200,
+        current_life=100,
+        attack=25,
+        speed=25,
+    )
+    sample_monster = Monster(
+        name="Fire Dragon",
+        max_life=100,
+        attack=10,
+        speed=10,
+        element=Element.NEUTRAL,
+        loot=[],
+        description="dragão",
+    )
+
+    sample_warrior.in_test = True
+    sample_warrior.defend = False
+    sample_monster.strike(sample_warrior)
+
+    assert sample_warrior.current_life < 100
+    assert sample_warrior.defend is False

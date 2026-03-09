@@ -290,7 +290,7 @@ def test_combat_ends_on_monster_death():
         name="Knight",
         max_life=100,
         current_life=100,
-        attack=999,  # dano alto para matar em 1 turno
+        attack=999,  # high damage for kill monster
         speed=20,
     )
 
@@ -391,3 +391,171 @@ def test_no_loot_on_defeat():
 
     assert result["result"] == "defeat"
     assert result["loot"] == []
+
+
+def _make_monster(attack=10, speed=5, life=100):
+    return Monster(
+        name="Goblin",
+        max_life=life,
+        attack=attack,
+        speed=speed,
+        element=Element.NEUTRAL,
+        loot=[],
+        description="goblin de teste",
+    )
+
+
+def test_turn_log_has_required_keys():
+    """execute_turn must return a dict with required keys."""
+    hero = _create_warrior_with_weapon(
+        name="Knight", max_life=100, current_life=100, attack=10, speed=20
+    )
+    battle = Battle(hero, _make_monster())
+    result = battle.execute_turn(player_choice="1")
+
+    # Top-level keys
+    for key in ("result", "loot", "turn_log"):
+        assert key in result, f"Chave ausente no resultado: {key}"
+
+    # Keys inside turn_log
+    turn_log = result["turn_log"]
+    for key in ("actions", "combat_over", "hero_used_consumable", "status"):
+        assert key in turn_log, f"Chave ausente no turn_log: {key}"
+
+
+def test_action_failed_when_no_weapon_equipped():
+    """Warrior sem arma: action_failed=True e monstro NÃO age (vida não muda)."""
+    warrior = Warrior(
+        name="Desarmado",
+        max_life=100,
+        current_life=100,
+        attack=25,
+        speed=30,  # most fast that monster
+    )
+    monster = _make_monster(attack=999, speed=5)
+    battle = Battle(warrior, monster)
+
+    life_before = warrior.current_life
+    result = battle.execute_turn(player_choice="1")
+
+    assert result["turn_log"].get("action_failed") is True
+    assert warrior.current_life == life_before  # monster no attacked
+
+
+def test_consumable_use_sets_hero_used_consumable():
+    """Using a consumable marks hero_used_consumable=True in the turn_log."""
+    from domain.consumable_item import ConsumableItem
+
+    hero = _create_warrior_with_weapon(
+        name="Knight", max_life=100, current_life=50, attack=10, speed=20
+    )
+    potion = ConsumableItem(
+        name="Poção de Cura", description="Cura", weight=0.5, recovered_value=20
+    )
+    hero.inventory.add_item_to_inventory(potion)
+
+    monster = _make_monster(attack=5, speed=5, life=200)
+    battle = Battle(hero, monster)
+
+    # Warrior.get_actions() does not expose inventory items — inject the potion
+    # directly into the action dict, exactly as game_manager does at runtime.
+    original_get_actions = hero.get_actions
+
+    def patched_get_actions():
+        actions = original_get_actions()
+        actions["p"] = {"description": potion.name, "method": potion.use}
+        return actions
+
+    hero.get_actions = patched_get_actions
+    result = battle.execute_turn(player_choice="p")
+    assert result["turn_log"]["hero_used_consumable"] is True
+
+
+def test_mana_potion_blocked_for_warrior_in_battle():
+    """Mana potion used by Warrior should mark action_failed=True and monster should not act."""
+    from domain.consumable_item import ConsumableItem
+
+    hero = _create_warrior_with_weapon(
+        name="Knight", max_life=100, current_life=100, attack=10, speed=20
+    )
+    mana_potion = ConsumableItem(
+        name="Poção de Mana",
+        description="Restaura mana",
+        weight=0.5,
+        recovered_value=30,
+        recovery_type="mana",
+    )
+    hero.inventory.add_item_to_inventory(mana_potion)
+
+    monster = _make_monster(attack=999, speed=5, life=200)
+    battle = Battle(hero, monster)
+
+    original_get_actions = hero.get_actions
+
+    def patched_get_actions():
+        actions = original_get_actions()
+        actions["m"] = {"description": mana_potion.name, "method": mana_potion.use}
+        return actions
+
+    hero.get_actions = patched_get_actions
+    life_before = hero.current_life
+    result = battle.execute_turn(player_choice="m")
+
+    assert result["turn_log"].get("action_failed") is True
+    assert hero.current_life == life_before  # monster did not act
+
+
+def test_turn_log_actions_list_not_empty_after_attack():
+    """After a successful attack, the actions list should not be empty."""
+    hero = _create_warrior_with_weapon(
+        name="Knight", max_life=100, current_life=100, attack=10, speed=20
+    )
+    battle = Battle(hero, _make_monster())
+    result = battle.execute_turn(player_choice="1")
+
+    assert isinstance(result["turn_log"]["actions"], list)
+    assert len(result["turn_log"]["actions"]) > 0
+
+
+def test_warrior_rage_activates_on_action_2():
+    """Activating rage (action 2) should double attack and zero shields."""
+    warrior = Warrior(
+        name="Bruto",
+        max_life=200,
+        current_life=200,
+        attack=25,
+        speed=30,
+        shield=10,
+        armor=10,
+    )
+    battle = Battle(warrior, _make_monster(speed=5))
+    battle.execute_turn(player_choice="2")  # to_rage
+
+    assert warrior.in_rage is True
+    assert warrior.attack == 50  # doubled
+    assert warrior.shield == 0
+    assert warrior.armor == 0
+
+
+def test_archer_aim_sets_special_state_in_log():
+    """Aiming should register special_state='aiming' in the turn_log."""
+    from domain.archer import Archer
+    from domain.ranged_weapon import RangedWeapon
+
+    archer = Archer(
+        name="Legolas",
+        max_life=100,
+        current_life=100,
+        attack=20,
+        speed=30,
+        max_ammo=10,
+        current_ammo=10,
+    )
+    bow = RangedWeapon(name="Arco", base_damage=10, ammo_required=1)
+    archer.inventory.add_item_to_inventory(bow)
+    archer.equip_weapon(bow)
+
+    battle = Battle(archer, _make_monster(speed=5))
+    result = battle.execute_turn(player_choice="2")  # aim
+
+    assert result["turn_log"].get("special_state") == "aiming"

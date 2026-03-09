@@ -221,7 +221,21 @@ class GameManager:
                 log = turn_result.get("turn_log", {})
                 actions_list = log.get("actions", [])
 
-                # CORREÇÃO: Mostramos a tela linda de log de turno para ver a vida descer!
+                # Build extra status info (ammo for Archer, mana for Mage, etc.)
+                extra_status = {}
+                if hasattr(self._hero, "current_ammo") and hasattr(
+                    self._hero, "max_ammo"
+                ):
+                    extra_status["ammo"] = (
+                        f"{self._hero.current_ammo}/{self._hero.max_ammo}"
+                    )
+                if hasattr(self._hero, "current_mana") and hasattr(
+                    self._hero, "max_mana"
+                ):
+                    extra_status["mana"] = (
+                        f"{self._hero.current_mana}/{self._hero.max_mana}"
+                    )
+
                 self._cli.display_turn_log(
                     turn_number=turn_counter,
                     hero_name=self._hero.name,
@@ -232,7 +246,13 @@ class GameManager:
                     monster_max_hp=current_monsters.max_life,
                     actions=actions_list,
                     status={self._hero.name: hero_status},
+                    extra_status=extra_status,
                 )
+
+                # Ação falhou (sem munição, sem mana, etc.): não avança o turno
+                # nem chama end_of_turn_routine — é como se o turno não tivesse ocorrido.
+                if log.get("action_failed"):
+                    continue
 
                 turn_counter += 1
 
@@ -294,11 +314,27 @@ class GameManager:
 
             elif action == "usar":
                 if isinstance(selected_item, ConsumableItem):
-                    selected_item.use(self._hero)
-                    self._hero.inventory.remove_item_from_inventory(selected_item)
-                    self._cli.display_message(
-                        f"{self._hero.name} consumiu {selected_item.name}. HP: {self._hero.current_life}/{self._hero.max_life}."
-                    )
+                    # Poção de mana só funciona para o Mago
+                    if selected_item.recovery_type == "mana" and not hasattr(
+                        self._hero, "current_mana"
+                    ):
+                        self._cli.display_message(
+                            f"{self._hero.name} tentou beber a poção de mana, mas não sentiu nada. Apenas Magos se beneficiam disso."
+                        )
+                    else:
+                        selected_item.use(self._hero)
+                        self._hero.inventory.remove_item_from_inventory(selected_item)
+
+                        if selected_item.recovery_type == "mana":
+                            self._cli.display_message(
+                                f"{self._hero.name} bebeu {selected_item.name}. "
+                                f"MP: {self._hero.current_mana}/{self._hero.max_mana}."
+                            )
+                        else:
+                            self._cli.display_message(
+                                f"{self._hero.name} consumiu {selected_item.name}. "
+                                f"HP: {self._hero.current_life}/{self._hero.max_life}."
+                            )
 
                 elif isinstance(selected_item, Weapon):
                     try:
@@ -308,16 +344,23 @@ class GameManager:
                         )
 
                     except ValueError:
-                        # IF THE PLAYER ALREADY HAs AN EQUIPPED WEAPON:
-                        old_one = self._hero.equipped_weapon
-                        self._hero.unequip_weapon()
-                        self._hero.equip_weapon(selected_item)
-                        self._cli.display_message(
-                            f"{self._hero.name} trocou {old_one.name} por {selected_item.name}."
-                        )
+                        # Herói já tem uma arma equipada: tenta trocar.
+                        # Verifica allowed_class antes de prosseguir com a troca.
+                        try:
+                            old_one = self._hero.equipped_weapon
+                            self._hero.unequip_weapon()
+                            self._hero.equip_weapon(selected_item)
+                            self._cli.display_message(
+                                f"{self._hero.name} trocou {old_one.name} por {selected_item.name}."
+                            )
+                        except TypeError as e:
+                            # Arma incompatível com a classe: reequipa a antiga e avisa.
+                            if old_one:
+                                self._hero.equip_weapon(old_one)
+                            self._cli.display_message(str(e))
 
                     except TypeError as e:
-                        # IN CASE ANYONE WHO'S NOT A MAGE TRIES TO EQUIP A GRIMOIRE:
+                        # Arma incompatível com a classe do herói (ex: Guerreiro tentando arco).
                         self._cli.display_message(str(e))
 
                 else:

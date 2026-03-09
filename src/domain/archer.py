@@ -127,15 +127,17 @@ class Archer(Hero):
             self.attack = normal_attack
 
     def damage_received(self, value: int, strike_element: Element) -> None:
-        """dodge an attack or takes damage"""
-        multiplier = strike_element.multiplier(self.element)
-        final_damage = multiplier * value
-
+        """Calculates dodge chance first, then applies damage if not dodged."""
+        # Roll dodge BEFORE taking damage so battle.py can compare life before/after
         self.attempted_dodge()
 
         if self.dodge:
+            # Dodge successful: reset flag and skip damage entirely
             self.reset_dodge()
             return
+
+        multiplier = strike_element.multiplier(self.element)
+        final_damage = multiplier * value
         self.current_life -= int(final_damage)
 
     def attempted_dodge(self) -> None:
@@ -167,7 +169,6 @@ class Archer(Hero):
         self.current_ammo -= ammo_cost
         self.current_life -= life_recoil
 
-        # AVISO: ESSE RETURN FOI COLOCADO PARA TER COERÊNCIA COM O MAGE.py NO ENTANTO NÃO É RESPONSABILIDADE DAS CLASSES DE DOMÍNIO RETORNAREM STRINGS DE AVISO. LEMBRE-SE
         return f"{self.name} sacrifica sua própria vitalidade para disparar um TIRO TRIPLO letal em {target.name}! Causou {damage} de dano."
 
     def reset_dodge(self) -> None:

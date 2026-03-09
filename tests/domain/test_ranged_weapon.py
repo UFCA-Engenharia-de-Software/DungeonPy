@@ -158,3 +158,10 @@ def test_heavy_attack_raises_when_not_enough_ammo():
         weapon.heavy_attack(user, target)
 
     assert user.current_ammo == 3
+
+
+def test_ranged_weapon_has_allowed_class_archer():
+    """RangedWeapon deve ter allowed_class restrito a Archer."""
+    weapon = RangedWeapon(name="Arco", base_damage=10, ammo_required=1)
+    assert hasattr(weapon, "allowed_class")
+    assert weapon.allowed_class == ["Archer"]

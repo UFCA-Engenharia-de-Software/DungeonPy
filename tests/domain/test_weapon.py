@@ -146,7 +146,14 @@ def test_get_attacks_method_executes_correct_attack():
 
     attacks = weapon.get_attacks()
 
-    # Executa ataque normal via dicionário
+    # Execcute normal attack for dict
     attacks["1"]["method"](mock_user, mock_target)
 
     mock_target.damage_received.assert_called_once_with(20, Element.FIRE)
+
+
+def test_weapon_has_allowed_class_warrior():
+    """Weapon deve ter allowed_class restrito a Warrior."""
+    weapon = Weapon(name="Espada", base_damage=10)
+    assert hasattr(weapon, "allowed_class")
+    assert weapon.allowed_class == ["Warrior"]

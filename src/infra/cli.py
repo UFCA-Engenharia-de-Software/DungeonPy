@@ -134,9 +134,6 @@ class CLI:
             footer = "[Use as setas ↑ ↓ para mover e ENTER para confirmar]"
             print(f"{Color.GRAY}{footer.center(60)}{Color.RESET}")
 
-            # ---------------------------------------------------------
-            # Exatamente a mesma lógica do teste que funcionou!
-            # ---------------------------------------------------------
             acao = CLI._ler_tecla()
 
             if acao == "UP":
@@ -151,7 +148,7 @@ class CLI:
         """Exibe o menu principal com a arte do jogo e subtítulo."""
 
         art_colored = f"""
-                                                             
+
 {Color.BLUE}▄▄▄▄▄▄                                       {Color.YELLOW}▄▄▄▄▄▄▄         {Color.RESET}
 {Color.BLUE}███▀▀██▄                                     {Color.YELLOW}███▀▀███▄       {Color.RESET}
 {Color.BLUE}███  ███ ██ ██ ████▄ ▄████ ▄█▀█▄ ▄███▄ ████▄ {Color.YELLOW}███▄▄███▀ ██ ██ {Color.RESET}
@@ -161,10 +158,9 @@ class CLI:
 {Color.BLUE}                      ▀▀▀                    {Color.YELLOW}          ▀▀▀   {Color.RESET}
         """
 
-        # Adicionando vida ao menu: Subtítulo, decoração e versão
         subtitle = "  Uma jornada de sombras, escolhas e perdas ".center(60)
         subtitle_colored = f"{Color.CYAN}{subtitle}{Color.RESET}"
-        version = "v1.0.0".rjust(58)  # Fica alinhado à direita
+        version = "v1.0.0".rjust(58)
         version_colored = f"{Color.YELLOW}{version}{Color.RESET}"
 
         arte_completa = f"{art_colored}\n{subtitle_colored}\n\n{version_colored}\n"
@@ -189,19 +185,16 @@ class CLI:
 
         if has_save:
             if escolha_idx == 0:
-                return "2"  # Retorna "2" (Load Game)
-
+                return "2"
             if escolha_idx == 1:
-                return "1"  # Retorna "1" (New Game)
-
+                return "1"
             if escolha_idx == 2:
-                return "3"  # Retorna "3" (Quit)
+                return "3"
         else:
             if escolha_idx == 0:
-                return "1"  # Retorna "1" (New Game)
-
+                return "1"
             if escolha_idx == 1:
-                return "3"  # Retorna "3" (Quit)
+                return "3"
 
     @staticmethod
     def show_save_notification(save_info: dict) -> None:
@@ -245,8 +238,6 @@ class CLI:
 
     @staticmethod
     def ask_hero_info() -> tuple[str, str]:
-        """Guia o jogador na criação do personagem."""
-
         """Guia o jogador na criação do personagem com imersão e arte."""
         import time
 
@@ -255,7 +246,6 @@ class CLI:
         print(f"{' O DESPERTAR ':^60}")
         print("=" * 60 + f"{Color.RESET}\n")
 
-        # Um pequeno toque de RPG de mesa antes de pedir o nome
         print(
             f"{Color.MAGENTA}Uma voz antiga e cansada ecoa na escuridão da sua mente...\n{Color.RESET}"
         )
@@ -275,12 +265,11 @@ class CLI:
                     f"{Color.YELLOW}— Não tenha medo. Fale seu nome...\n{Color.RESET}"
                 )
 
-        # Arte das 3 armas lado a lado (Pure ASCII para não bugar)
         arte_classes = f"""
       {Color.RED}[ GUERREIRO ]{Color.RESET}          {Color.GREEN}[ ARQUEIRO ]{Color.RESET}            {Color.BLUE}[ MAGO ]{Color.RESET}
-        
+
         {Color.YELLOW}o{Color.BROWN}=={Color.YELLOW}}}{Color.WHITE}=====>{Color.RESET}             {Color.BROWN}>>{Color.WHITE}---{Color.BROWN}>{Color.RESET}                   S2
-        
+
        {Color.RED}Vida:{Color.RESET}  150            Vida:  100             Vida:   80
        Ataque: 30            Ataque: 35             {Color.BLUE}Ataque:{Color.RESET} 50
        Veloc:  10            {Color.GREEN}Veloc:{Color.RESET}  25             Veloc:  15
@@ -292,28 +281,19 @@ class CLI:
             "Mago      (Especialista em magias e poder explosivo)",
         ]
 
-        # Passamos a arte_classes para o nosso motor de menu interativo
         escolha_idx = CLI._mostrar_menu_interativo(
             f"{Color.CYAN}Saudações, {Color.YELLOW}{name}{Color.CYAN}... Qual caminho você trilhou?{Color.RESET}",
             opcoes_classe,
             arte_ascii=arte_classes,
         )
 
-        # Mapeia o índice (0, 1, 2) para a string correta ("1", "2", "3")
         class_choice = str(escolha_idx + 1)
 
         return name, class_choice
 
-    # Menus simples
     @staticmethod
     def show_game_over() -> str:
-        """
-        Exibe a tela de derrota de forma interativa.
-
-        Retorna:
-            "1" -> Tentar novamente
-            "2" -> Voltar ao menu principal
-        """
+        """Exibe a tela de derrota de forma interativa."""
 
         arte_game_over = f"""{Color.DARK_RED}
     ██████   ███████ ███    ███ ███████     ███████ ██    ██ ███████ ██████
@@ -344,12 +324,7 @@ class CLI:
 
     @staticmethod
     def _imprimir_lento(text: str, delay: float = 0.05) -> None:
-        """
-        Gera o efeito de máquina de escrever (RPG clássico).
-        Se o jogador apertar ENTER, pula o efeito e imprime a linha inteira.
-        Create the effect of typewriter
-        If Player press ENTER, jump the effect and print the whole line
-        """
+        """Gera o efeito de máquina de escrever (RPG clássico)."""
         import time
         import os
 
@@ -363,7 +338,6 @@ class CLI:
                 sys.stdout.flush()
 
                 if not jump:
-                    # Verifica se tem tecla na fila sem pausar o código
                     if msvcrt.kbhit():
                         key = msvcrt.getch()
                         if key in [b"\r", b"\n"]:
@@ -377,7 +351,6 @@ class CLI:
             fd = sys.stdin.fileno()
             old_settings = termios.tcgetattr(fd)
             try:
-                # Desativa o ECHO (para não pular linha na tela) e ativa modo não-canônico
                 new_settings = termios.tcgetattr(fd)
                 new_settings[3] = new_settings[3] & ~termios.ECHO & ~termios.ICANON
                 termios.tcsetattr(fd, termios.TCSADRAIN, new_settings)
@@ -387,26 +360,21 @@ class CLI:
                     sys.stdout.flush()
 
                     if not jump:
-                        # Espera por 'delay' segundos. Se tiver input, o select nos avisa!
                         i, _, _ = select.select([sys.stdin], [], [], delay)
                         if i:
                             ch = sys.stdin.read(1)
                             if ch in ["\n", "\r"]:
                                 jump = True
             finally:
-                # Devolve o terminal ao normal!
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-        print()  # Quebra a linha no final da frase
+        print()
 
     @staticmethod
     def show_victory(hero_name: str) -> None:
-        """
-        Exibe o final narrativo e melancólico do jogo, seguido pelos créditos.
-        """
+        """Exibe o final narrativo e melancólico do jogo, seguido pelos créditos."""
         import time
 
-        # Âncora visual triste para a sala
         arte_vela = r"""
                (
               ) )
@@ -418,7 +386,6 @@ class CLI:
         """
 
         def _tocar_cena(linhas: list[tuple[str, float]]) -> None:
-            """Função interna para desenhar a tela limpa a cada cena."""
             CLI._limpar_tela()
             print("=" * 60)
             print(f"{Color.CYAN}{' A ÚLTIMA SALA ':^60}{Color.RESET}")
@@ -443,11 +410,6 @@ class CLI:
             )
             CLI._ler_tecla()
 
-        # ==========================================
-        # ROTEIRO DA CUTSCENE FINAL (Dividido em Atos)
-        # ==========================================
-
-        # Ato 1: A Chegada
         _tocar_cena(
             [
                 (
@@ -465,7 +427,6 @@ class CLI:
             ]
         )
 
-        # Ato 2: O Desabafo
         _tocar_cena(
             [
                 (
@@ -487,7 +448,6 @@ class CLI:
             ]
         )
 
-        # Ato 3: A Quebra de Expectativa
         _tocar_cena(
             [
                 (
@@ -509,7 +469,6 @@ class CLI:
             ]
         )
 
-        # Ato 4: A Conexão
         _tocar_cena(
             [
                 (
@@ -527,7 +486,6 @@ class CLI:
             ]
         )
 
-        # Ato 5: O Fim
         CLI._limpar_tela()
         print("=" * 60)
         print(f"{' A ÚLTIMA SALA ':^60}")
@@ -538,11 +496,8 @@ class CLI:
             "Narrador: Ele segura a mão dela. Dessa vez, o aperto é devolvido com firmeza. O frio da masmorra não importa mais.\n",
             0.05,
         )
-        time.sleep(3)  # Pausa longa dramática no escuro
+        time.sleep(3)
 
-        # ==========================================
-        # TELA DE CRÉDITOS
-        # ==========================================
         CLI._limpar_tela()
         time.sleep(1)
 
@@ -551,8 +506,6 @@ class CLI:
         time.sleep(3)
 
         CLI._limpar_tela()
-
-        # Aqui no futuro você pode dar o play na música triste!
 
         print(f"{Color.CYAN}=" * 60 + Color.RESET)
         credits_text = " CRÉDITOS - DUNGEONPY "
@@ -584,12 +537,10 @@ class CLI:
         print(f"{Color.GREEN}{texto_obrigado.center(60, '*')}{Color.RESET}")
         print(f"{Color.CYAN}=" * 60 + Color.RESET)
 
-        # O prompt do jogador em uma cor neutra
         msg_voltar = "[Pressione ENTER para voltar ao Menu Principal]"
         print("\n" + f"{Color.GRAY}{msg_voltar.center(60)}{Color.RESET}")
 
         CLI._clear_keyboard_buffer()
-        # Usamos o leitor multiplataforma para esperar a ação do jogador
         CLI._ler_tecla()
 
     @staticmethod
@@ -599,14 +550,7 @@ class CLI:
         missed_items: list[str] = None,
         leveled_up: bool = False,
     ) -> None:
-        """
-        O que faz: Exibe a tela de vitória após derrotar um monstro, mostrando os espólios (loot) e XP.
-
-        O que recebe:
-            - monster_name (str): O nome do monstro derrotado.
-            - dropped_items (list[str]): Uma lista apenas com os NOMES dos itens (Ex: ["Poção de Cura", "Adaga"]).
-            - leveled_up (bool): Passar True se o herói subiu de nível nessa luta.
-        """
+        """Exibe a tela de vitória após derrotar um monstro."""
         CLI._limpar_tela()
 
         print(f"{Color.GREEN}=" * 60)
@@ -619,7 +563,6 @@ class CLI:
             )
         )
 
-        # Efeito visual caso o jogador tenha subido de nível
         if leveled_up:
             msg_lvl = " LEVEL UP! VOCÊ FICOU MAIS FORTE! "
             lvl_spaces = " " * ((60 - len(msg_lvl)) // 2)
@@ -629,7 +572,6 @@ class CLI:
 
         print(f" {Color.YELLOW}{'RECOMPENSAS'.center(60, '-')}{Color.RESET}")
 
-        # Verifica se o monstro dropou algo ou não
         if dropped_items:
             print(f"  {Color.GREEN}• Itens recolhidos:{Color.RESET}")
             for item in dropped_items:
@@ -661,23 +603,17 @@ class CLI:
         espacos_cont = " " * ((60 - len(msg_continue)) // 2)
         print(f"\n{espacos_cont}{Color.CYAN}{msg_continue}{Color.RESET}")
 
-        CLI._ler_tecla()  # Usamos aquele nosso leitor multiplataforma para pausar!
+        CLI._ler_tecla()
 
     @staticmethod
     def show_hero_status(status_dict: dict) -> None:
-        """
-        O que recebe: Um dicionário com todos os status atuais do herói.
-        O que faz: Imprime a "Ficha de Personagem" completa e espera uma tecla para voltar.
-        Mostra os status: "Nome, Vida atual em relação a máxima, ataque, velocidade, e arma atual equipada."
-        """
+        """Imprime a 'Ficha de Personagem' completa."""
         CLI._limpar_tela()
 
-        # Criar barra de vida
         barra_hp = CLI._gerar_barra_progresso(
             status_dict["current_life"], status_dict["max_life"], tamanho=15
         )
 
-        # Monta a ficha de personagem
         nome = status_dict["name"]
         ataque = status_dict["attack"]
         velocidade = status_dict["speed"]
@@ -688,20 +624,16 @@ class CLI:
         print(f"{'FICHA DE PERSONAGEM':^60}")
         print("=" * 60)
 
-        # Nome
         print(f"{'Nome:':^30} {nome:^30}")
         print("-" * 60)
 
-        # Vida
         print(f"      Vida: {barra_hp}")
         print("-" * 60)
 
-        # Ataque e Velocidade lado a lado
         print(f"{'Ataque:':^30} {ataque:^30}")
         print(f"{'Velocidade:':^30} {velocidade:^30}")
         print("-" * 60)
 
-        # Elemento e Arma
         print(f"{'Elemento:':^30} {elemento:^30}")
         print(f"{'Arma Equipada:':^30} {arma:^30}")
         print("=" * 60)
@@ -710,14 +642,9 @@ class CLI:
 
         CLI._ler_tecla()
 
-    # Exploração e Inventário
     @staticmethod
     def print_room_description(description: str) -> None:
-        """
-        O que recebe: O texto da sala.
-        O que faz: Imprime o texto formatado com quebra de linha inteligente
-                   e uma borda visual para imersão.
-        """
+        """Imprime o texto da sala formatado."""
         CLI._limpar_tela()
 
         CLI._imprimir_lento(description)
@@ -727,10 +654,7 @@ class CLI:
 
     @staticmethod
     def show_exploration_menu() -> str:
-        """
-        O que faz: Imprime "O que deseja fazer? 1. Avançar para próxima sala | 2. Ver Inventário | 3. Ficha de personagem (apenas se der tempo)".
-        O que devolve: A string "1" ou "2".
-        """
+        """Menu de exploração entre salas."""
         opcoes = [
             f"{Color.GREEN}Avançar para próxima sala{Color.RESET}",
             f"{Color.BROWN}Ver Inventário{Color.RESET}",
@@ -749,6 +673,9 @@ class CLI:
 
             if escolha_idx == 1:
                 return "2"
+
+            if escolha_idx == 2:
+                return "3"
 
             CLI._limpar_tela()
             print(f"{Color.GRAY}=" * 60 + Color.RESET)
@@ -771,7 +698,6 @@ class CLI:
         simbolo_vazio: str = " ",
     ) -> str:
         """Cria uma barra visual. Ex: [██████    ] 6/10"""
-        # Evita divisão por zero se o máximo for 0
         if maximo <= 0:
             return f"[{simbolo_vazio * tamanho}] 0/0"
 
@@ -791,31 +717,12 @@ class CLI:
         arte_monstro: str,
         nome_monstro: str,
     ) -> str:
-        """
-        O que faz: Desenha a tela de batalha completa e pede a ação do jogador.
-
-        Caminho para adicionar cada argumento na chamada do menu:
-
-        ACOES_DO_HEROI  = instancia_arquetipo_heroi.get_actions()
-
-        NOME_HEROI = variável que guarda o nome recolhido do usuário após o método: ask_hero_info()
-
-        NIVEL_HEROI = Passar o nível que foi passado para a criação do level em que ele está. Ex: (create_room(level = 1, enviroment..)) Esse 1 que foi passado é o que deve ser passado no nível do heroi.
-
-        HP_ATUAL = instancia_arquetipo_heroi.current_life
-
-        HP_MAX = instancia_arquetipo_heroi.max_life
-
-        arte_monstro = sala_level1_criada.monsters[0 ou 1, depende de qual monstro está enfrentadno].art
-
-        nome_monstro = sala_level1_criada.monsters[0 ou 1, depende de qual monstro está enfrentadno].name
-        """
+        """Desenha a tela de batalha e pede a ação do jogador."""
 
         barra_hp = CLI._gerar_barra_progresso(hp_atual, hp_max)
 
         cor_hp = Color.GREEN if (hp_atual / hp_max) > 0.5 else Color.RED
 
-        # Montamos a "Cena" da batalha juntando o Monstro e o HUD do Herói
         cena_batalha = f"""
 {arte_monstro}
 {nome_monstro.center(60)}
@@ -840,38 +747,29 @@ class CLI:
             )
 
             if escolha_idx == 0:
-                # Extrai apenas as descrições do dicionário para mostrar na tela
                 textos_ataques = [
                     info["description"] for info in acoes_do_heroi.values()
                 ]
-                textos_ataques.append(
-                    "Voltar"
-                )  # Opção salvadora caso o jogador clique errado!
+                textos_ataques.append("Voltar")
 
-                # Mostra o submenu mantendo a arte do monstro na tela
                 escolha_ataque_idx = CLI._mostrar_menu_interativo(
                     f"{Color.RED}ESCOLHA SEU GOLPE:{Color.RESET}",
                     textos_ataques,
                     arte_ascii=cena_batalha,
                 )
 
-                # Se ele clicou em "Voltar" (a última opção da lista)
                 if escolha_ataque_idx == len(textos_ataques) - 1:
-                    continue  # Volta para o início do 'while' (Menu Principal)
+                    continue
 
-                # Se ele escolheu um ataque, pegamos a chave original do dicionário (ex: "1", "2")
                 chaves_originais = list(acoes_do_heroi.keys())
                 chave_escolhida = chaves_originais[escolha_ataque_idx]
 
-                return chave_escolhida  # O Battle vai receber "1", "2" ou outro número para ativar o método!
+                return chave_escolhida
 
-            # --- SE ESCOLHEU INVENTÁRIO ---
             elif escolha_idx == 1:
                 return "inventario"
 
-            # --- SE ESCOLHEU FUGIR ---
             elif escolha_idx == 2:
-                # Easter Egg: Mantém a cena, avisa que não dá, pede um Enter e volta pro menu!
                 CLI._limpar_tela()
                 print(cena_batalha)
                 print(
@@ -888,24 +786,14 @@ class CLI:
                 )
                 print("(Aperte ENTER para voltar)")
                 input()
-                continue  # Volta pro menu principal
+                continue
 
     @staticmethod
     def show_inventory(inventory_summary: dict) -> tuple[str, str] | None:
-        """
-        Exibe o inventário de forma interativa usando o menu padrão da CLI.
-
-        Recebe:
-            inventory_summary: dict retornado por Inventory.get_items_summary()
-
-        Retorna:
-            (item_name, action) -> quando o jogador escolhe usar/equipar/descartar um item.
-            None               -> quando o jogador escolhe "Voltar" no menu de itens.
-        """
+        """Exibe o inventário de forma interativa."""
 
         items = inventory_summary["items"]
 
-        # Inventário vazio: sem itens, sem navegação
         if not items:
             CLI._limpar_tela()
             print("\n" + f"{Color.BROWN}=" * 60 + Color.RESET)
@@ -923,7 +811,6 @@ class CLI:
             CLI._ler_tecla()
             return None
 
-        # Dados de cabeçalho (peso) — calculados uma vez fora dos loops
         actual_weight = inventory_summary["current_weight"]
         max_weight = inventory_summary["capacity"]
         weight_color = Color.RED if (actual_weight / max_weight) > 0.8 else Color.GREEN
@@ -934,14 +821,12 @@ class CLI:
             f"{Color.GREEN}{max_weight:.1f}{Color.RESET}"
         )
 
-        # Mapa fixo: índice da ação → string reconhecida pelo GameManager/Battle
         action_map = {
             0: "usar",
             1: "ver_descricao",
             2: "descartar",
         }
 
-        # Submenu de ações já colorido
         action_options = [
             f"{Color.GREEN}Usar / Equipar{Color.RESET}",
             f"{Color.CYAN}Ver descrição{Color.RESET}",
@@ -951,8 +836,6 @@ class CLI:
 
         VOLTAR_INVENTARIO = len(action_options) - 1
 
-        # Loop externo: lista de itens
-        # Permanece ativo até o jogador escolher "Voltar" neste nível.
         while True:
             item_options = [
                 f"{Color.YELLOW}{item['name']}{Color.RESET} {Color.GRAY}(peso: {item['weight']}){Color.RESET}"
@@ -960,21 +843,19 @@ class CLI:
             ]
             item_options.append(f"{Color.GRAY}Voltar{Color.RESET}")
 
-            VOLTAR_MENU = len(item_options) - 1  # constante semântica
+            VOLTAR_MENU = len(item_options) - 1
 
             selected_index = CLI._mostrar_menu_interativo(
                 titulo=f"{Color.BROWN}INVENTÁRIO{Color.RESET}\n{header}",
                 opcoes=item_options,
             )
 
-            # Jogador quer sair do inventário completamente
             if selected_index == VOLTAR_MENU:
                 return None
 
             selected_item = items[selected_index]
             item_name = selected_item["name"]
 
-            # Loop interno: submenu de ações
             while True:
                 action_index = CLI._mostrar_menu_interativo(
                     titulo=f"{Color.BROWN}AÇÕES  —  {Color.YELLOW}{item_name}{Color.RESET}",
@@ -990,7 +871,6 @@ class CLI:
                     print(f"{Color.YELLOW}{item_name:^60}{Color.RESET}")
                     print(f"{Color.BROWN}=" * 60 + Color.RESET)
 
-                    # Imprime a descrição centralizada e bonita
                     print(f"\n{Color.CYAN}{item_description.center(60)}{Color.RESET}\n")
 
                     CLI._clear_keyboard_buffer()
@@ -1003,9 +883,8 @@ class CLI:
                     continue
 
                 if action_index == VOLTAR_INVENTARIO:
-                    break  # ← sai só do loop interno; loop externo continua
+                    break
 
-                # Ação real selecionada → entrega resultado ao chamador
                 return (item_name, action_map[action_index])
 
     @staticmethod
@@ -1019,9 +898,14 @@ class CLI:
         monster_max_hp: int,
         actions: list[str],
         status: dict[str, str],
+        extra_status: dict[str, str] = None,  # ← NOVO: ammo, mana, etc.
     ) -> None:
         """
         Exibe o resumo visual de um turno de combate.
+
+        extra_status: dicionário opcional com recursos especiais do herói.
+                      Chaves reconhecidas: 'ammo' (Arqueiro), 'mana' (Mago).
+                      Ex: {"ammo": "7/10"} ou {"mana": "30/100"}
         """
 
         print("\n" + f"{Color.YELLOW}" + "=" * 60)
@@ -1032,7 +916,6 @@ class CLI:
         raw_subtitle = f"{hero_name}: {hero_hp}/{hero_max_hp} HP   |   {monster_name}: {monster_hp}/{monster_max_hp} HP"
         espaces = " " * ((60 - len(raw_subtitle)) // 2)
 
-        # Pintando a vida dinamicamente
         cor_hp_heroi = Color.GREEN if (hero_hp / hero_max_hp) > 0.5 else Color.RED
         cor_hp_monstro = (
             Color.DARK_RED if (monster_hp / monster_max_hp) > 0.5 else Color.RED
@@ -1041,17 +924,31 @@ class CLI:
         str_heroi = f"{Color.CYAN}{hero_name}{Color.RESET}: {cor_hp_heroi}{hero_hp}/{hero_max_hp} HP{Color.RESET}"
         str_monstro = f"{Color.RED}{monster_name}{Color.RESET}: {cor_hp_monstro}{monster_hp}/{monster_max_hp} HP{Color.RESET}"
 
-        # Imprimindo o subtítulo perfeitamente centralizado
         print(f"{espaces}{str_heroi}   {Color.GRAY}|{Color.RESET}   {str_monstro}")
+
+        # --- Linha de recursos especiais (Arqueiro: flechas / Mago: mana) ---
+        if extra_status:
+            resource_parts = []
+            if "ammo" in extra_status:
+                resource_parts.append(
+                    f"{Color.BROWN}🏹 Flechas:{Color.RESET} {Color.YELLOW}{extra_status['ammo']}{Color.RESET}"
+                )
+            if "mana" in extra_status:
+                resource_parts.append(
+                    f"{Color.BLUE}✨ Mana:{Color.RESET} {Color.CYAN}{extra_status['mana']}{Color.RESET}"
+                )
+            if resource_parts:
+                print(f"{espaces}{'   '.join(resource_parts)}")
+
         print(f"{Color.GRAY}-" * 60 + Color.RESET)
 
         # Status
         if status:
             print(f"\n{Color.MAGENTA}Status:{Color.RESET}")
             for entity_name, state in status.items():
-                enitity_color = Color.CYAN if entity_name == hero_name else Color.RED
+                entity_color = Color.CYAN if entity_name == hero_name else Color.RED
                 print(
-                    f"  {enitity_color}{entity_name}{Color.RESET} {Color.GRAY}→ {Color.RESET} {Color.YELLOW}{state}{Color.RESET}"
+                    f"  {entity_color}{entity_name}{Color.RESET} {Color.GRAY}→ {Color.RESET} {Color.YELLOW}{state}{Color.RESET}"
                 )
 
         # Ações
@@ -1074,12 +971,9 @@ class CLI:
 
     @staticmethod
     def display_message(message: str) -> None:
-        """
-        Exibe mensagens rápidas do sistema e pausa a tela.
-        """
+        """Exibe mensagens rápidas do sistema e pausa a tela."""
         print("\n" + f"{Color.BROWN}=" * 60 + Color.RESET)
 
-        # Centraliza o texto bonitinho
         print(f"\n{Color.CYAN}{message.center(60)}{Color.RESET}\n")
 
         print(f"{Color.BROWN}=" * 60 + Color.RESET)
@@ -1092,13 +986,9 @@ class CLI:
         )
 
 
-# ====================================================================
-# ÁREA DE TESTES VISUAIS E SIMULAÇÃO DE FLUXO PARA A EQUIPE
-# (Este código só roda se você executar o cli.py diretamente)
-# ====================================================================
-if __name__ == "__main__":
-    # --- PASSO 1: MENU PRINCIPAL ---
+# Area for visual tests with datas pre-setting
 
+if __name__ == "__main__":
     acao = CLI.show_main_menu(True)
     if acao == "1":
         CLI.confirm_overwrite_save()
@@ -1130,7 +1020,6 @@ if __name__ == "__main__":
         )
         CLI._ler_tecla()
 
-        # --- PASSO 3: TESTE DE INVENTÁRIO (Preparação antes da luta) ---
         mochila_falsa = {
             "current_weight": 3.5,
             "capacity": 15.0,
@@ -1143,8 +1032,6 @@ if __name__ == "__main__":
         escolha_inventario = CLI.show_inventory(mochila_falsa)
         CLI._limpar_tela()
 
-        # --- PASSO 4: TESTE DE COMBATE ---
-        # 4.1 O Log de Turno (Apresentando o status da luta)
         CLI.display_turn_log(
             turn_number=1,
             hero_name=nome_heroi,
@@ -1161,9 +1048,9 @@ if __name__ == "__main__":
                 nome_heroi: "Queimando (perde 2 HP por turno)",
                 "Dragão de Fogo Ancião": "Fúria (+20% de dano)",
             },
+            extra_status={"ammo": "7/10"},  # Exemplo com Arqueiro
         )
 
-        # 4.2 A Escolha de Ação do Jogador
         acoes_falsas = {
             "1": {"description": "Ataque Básico"},
             "2": {"description": "Golpe Pesado"},
@@ -1190,7 +1077,6 @@ if __name__ == "__main__":
             nome_monstro="Dragão de Fogo Ancião",
         )
 
-        # --- PASSO 5: RECOMPENSA (Simulando a morte do monstro) ---
         CLI.show_battle_reward(
             monster_name="Dragão de Fogo Ancião",
             dropped_items=["Escama de Fogo", "Coração de Dragão"],
@@ -1198,8 +1084,6 @@ if __name__ == "__main__":
             leveled_up=True,
         )
 
-        # --- PASSO 6: FINAIS (Testando as telas de conclusão) ---
-        # Testando primeiro o Game Over
         CLI._limpar_tela()
         print(
             f"{Color.GRAY}Simulando a tela de DERROTA... [Pressione ENTER]{Color.RESET}"
@@ -1207,7 +1091,6 @@ if __name__ == "__main__":
         CLI._ler_tecla()
         CLI.show_game_over()
 
-        # Testando a tela de Vitória (Cutscene + Créditos)
         CLI._limpar_tela()
         print(
             f"{Color.GRAY}Simulando a tela de VITÓRIA FINAL... [Pressione ENTER]{Color.RESET}"
@@ -1215,13 +1098,11 @@ if __name__ == "__main__":
         CLI._ler_tecla()
         CLI.show_victory(nome_heroi)
 
-        # --- RESUMO FINAL DA SIMULAÇÃO ---
         CLI._limpar_tela()
         print(f"{Color.GREEN}=" * 60 + Color.RESET)
         print(f"{Color.YELLOW}{' SIMULAÇÃO DE INTERFACE CONCLUÍDA ':^60}{Color.RESET}")
         print(f"{Color.GREEN}=" * 60 + f"{Color.RESET}\n")
 
-        # Mostrando de forma segura o que o jogador escolheu
         if escolha_inventario:
             print(
                 f" {Color.GRAY}• Inventário testado (Ação escolhida: {escolha_inventario}){Color.RESET}"

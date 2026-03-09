@@ -273,7 +273,6 @@ class GameManager:
                         if self._repository.has_save():
                             self.load_game()
 
-
                         else:
                             self._cli.display_message(
                                 "Você não possui um jogo salvo! Vai ter que ir do começo..."

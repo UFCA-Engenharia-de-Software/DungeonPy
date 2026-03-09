@@ -153,7 +153,6 @@ class Mage(Hero):
         self.max_mana += mana_increase
         self.current_mana += mana_increase
 
-
     def get_actions(self) -> Dict[str, Any]:
         actions = {}
 

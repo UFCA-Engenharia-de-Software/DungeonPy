@@ -130,34 +130,20 @@ def test_ancient_magic_insufficient_mana(mage_default, mock_target):
 # UPGRADE TESTS:
 
 
-def test_upgrade_attack(mage_default):
+def test_upgrade(mage_default):
     """When choice == 1: attack raises."""
 
     initial_attack = mage_default.attack
+    initial_max_mana = mage_default.max_mana
+    initial_current_mana = mage_default.current_mana
+
     points = 5
 
-    mage_default.upgrade(points, 1)
-    assert mage_default.attack == initial_attack + points
+    mage_default.upgrade(points)
 
-
-def test_upgrade_mana(mage_default):
-    """When choice == 2: max_mana raises and current_mana get restored."""
-
-    mage_default.max_mana = 0
-    mage_default.current_mana = 0
-    initial_max = mage_default.max_mana
-    points = 10
-
-    mage_default.upgrade(points, 2)
-    assert mage_default.max_mana == initial_max + points
-    assert mage_default.current_mana == mage_default.max_mana
-
-
-def test_upgrade_invalid_choice(mage_default):
-    """Raise an error when there's no matching option for choice."""
-
-    with pytest.raises(ValueError):
-        mage_default.upgrade(points=5, choice=3)
+    assert mage_default.attack == initial_attack + 2
+    assert mage_default.max_mana == initial_max_mana + 3
+    assert mage_default.current_mana == initial_current_mana + 3
 
 
 # GET ACTION TESTS:

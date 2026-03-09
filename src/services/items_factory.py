@@ -33,6 +33,7 @@ class ItemsFactory:
                 description="Recupera 20 de Mana.",
                 weight=0.5,
                 recovered_value=20,
+                recovery_type="mana",
             ),
         ]
 
@@ -155,7 +156,7 @@ class ItemsFactory:
         },
     }
 
-    # Retorna a lista completa: drops fixos (poções) + drop de equipamento.
+    # Returns the full list: fixed drops (potions) + equipment drop.
     @staticmethod
     def get_loot_for_monster(monster_name: str) -> list:
         """
@@ -170,7 +171,7 @@ class ItemsFactory:
         Returns:
             List of instantiated Item objects ready to be added to inventory.
         """
-        loot = ItemsFactory._fixed_drops()  # novas instâncias a cada chamada
+        loot = ItemsFactory._fixed_drops()
 
         equipment_config = ItemsFactory.DROP_TABLES.get(monster_name, {})
         if equipment_config:
@@ -205,6 +206,7 @@ class ItemsFactory:
                     description="Recupera 30 de Mana",
                     weight=0.5,
                     recovered_value=30,
+                    recovery_type="mana",
                 ),
             ],
             "base_pack_archer": [

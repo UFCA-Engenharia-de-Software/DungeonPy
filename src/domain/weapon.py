@@ -32,6 +32,7 @@ class Weapon(Item):
         super().__init__(name, description, weight)
         self.base_damage = base_damage
         self.element = element
+        self.allowed_class = ["Warrior"]
         self._attacks = {
             "1": {"description": "Ataque Normal", "method": self.attack},
             "2": {"description": "Ataque Pesado", "method": self.heavy_attack},

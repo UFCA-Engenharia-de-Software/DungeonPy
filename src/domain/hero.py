@@ -43,8 +43,10 @@ class Hero(Entity):
             hasattr(weapon, "allowed_class")
             and self.__class__.__name__ not in weapon.allowed_class
         ):
+            allowed = ", ".join(weapon.allowed_class)
             raise TypeError(
-                f"A classe {self.__class__.__name__} não possui o conhecimento para empunhar {weapon.name}!"
+                f"{self.name} não pode equipar '{weapon.name}'! "
+                f"Essa arma só pode ser usada por: {allowed}."
             )
 
         if self._equipped_weapon is not None:

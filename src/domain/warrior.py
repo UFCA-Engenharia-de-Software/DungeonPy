@@ -52,12 +52,20 @@ class Warrior(Hero):
         """
         Atack enemies with default choice.
         """
+        if self.equipped_weapon is None:
+            raise ValueError(
+                "Nenhuma arma equipada! Equipe uma arma no inventário antes de atacar."
+            )
         self.equipped_weapon.attack(self, target)
 
     def heavy_strike(self, target: Entity) -> None:
         """
         Atack enemies with heavy choice.
         """
+        if self.equipped_weapon is None:
+            raise ValueError(
+                "Nenhuma arma equipada! Equipe uma arma no inventário antes de atacar."
+            )
         self.equipped_weapon.heavy_attack(self, target)
 
     def damage_received(self, value: int, strike_element: Element) -> None:
@@ -111,7 +119,7 @@ class Warrior(Hero):
         self.shield = 0
         self.armor = 0
 
-        # SOME SORT OF CLOCK TO END RAGE WHEN NEEDED:
+        # Some kind of clock to end rage when needed
         self.rage_duration = 2
 
     def reset_rage(self) -> None:

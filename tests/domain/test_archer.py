@@ -331,3 +331,53 @@ def test_equip_weapon_type_erro():
             current_ammo=10,
             equipped_weapon=arco_fake,
         )
+
+
+def test_archer_cannot_equip_melee_weapon():
+    """Archer should not be able to equip a melee weapon."""
+    archer = Archer(
+        name="Arqueiro",
+        max_life=100,
+        current_life=100,
+        attack=20,
+        speed=30,
+    )
+    sword = Weapon(name="Espada", base_damage=10)
+
+    with pytest.raises(TypeError):
+        archer.equip_weapon(sword)
+
+
+def test_archer_cannot_equip_grimoire():
+    """Archer should not be able to equip a grimoire."""
+    from domain.grimoire import Grimoire
+    from domain.element import Element
+
+    archer = Archer(
+        name="Arqueiro",
+        max_life=100,
+        current_life=100,
+        attack=20,
+        speed=30,
+    )
+    grimoire = Grimoire(name="Tomo", element=Element.FIRE, magic_power=20, mana_cost=5)
+
+    with pytest.raises(TypeError):
+        archer.equip_weapon(grimoire)
+
+
+def test_archer_can_equip_ranged_weapon():
+    """Archer should be able to equip ranged weapons normally"""
+    from domain.ranged_weapon import RangedWeapon
+
+    archer = Archer(
+        name="Arqueiro",
+        max_life=100,
+        current_life=100,
+        attack=20,
+        speed=30,
+    )
+    bow = RangedWeapon(name="Arco de Madeira", base_damage=10, ammo_required=1)
+    archer.equip_weapon(bow)
+
+    assert archer.equipped_weapon is bow

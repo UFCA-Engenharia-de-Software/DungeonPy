@@ -240,3 +240,63 @@ def test_drop_distribution_is_balanced():
     assert counts["grimoire"] == 5, (
         f"grimoires: esperado 5, encontrado {counts['grimoire']}"
     )
+
+
+def test_fixed_drops_mana_potion_has_correct_recovery_type():
+    """Mana potion in the fixed drops should have recovery_type='mana'."""
+    drops = ItemsFactory._fixed_drops()
+    mana_potions = [
+        item
+        for item in drops
+        if isinstance(item, ConsumableItem) and "Mana" in item.name
+    ]
+    assert len(mana_potions) == 1
+    assert mana_potions[0].recovery_type == "mana"
+
+
+def test_fixed_drops_life_potion_has_correct_recovery_type():
+    """Healing potion in the fixed drops should have recovery_type='life'."""
+    drops = ItemsFactory._fixed_drops()
+    life_potions = [
+        item
+        for item in drops
+        if isinstance(item, ConsumableItem) and "Cura" in item.name
+    ]
+    assert len(life_potions) == 1
+    assert life_potions[0].recovery_type == "life"
+
+
+def test_base_pack_mage_mana_potion_has_correct_recovery_type():
+    """Mana potion in the Mage's starting pack should have recovery_type='mana'."""
+    packs = ItemsFactory.get_base_packs()
+    mage_items = packs["base_pack_mage"]
+    mana_potions = [
+        item
+        for item in mage_items
+        if isinstance(item, ConsumableItem) and item.recovery_type == "mana"
+    ]
+    assert len(mana_potions) >= 1
+
+
+def test_warrior_base_pack_has_no_mana_potion():
+    """Warrior's starting pack should not contain a mana potion."""
+    packs = ItemsFactory.get_base_packs()
+    warrior_items = packs["base_pack_warrior"]
+    mana_potions = [
+        item
+        for item in warrior_items
+        if isinstance(item, ConsumableItem) and item.recovery_type == "mana"
+    ]
+    assert len(mana_potions) == 0
+
+
+def test_archer_base_pack_has_no_mana_potion():
+    """Archer's starting pack should not contain a mana potion."""
+    packs = ItemsFactory.get_base_packs()
+    archer_items = packs["base_pack_archer"]
+    mana_potions = [
+        item
+        for item in archer_items
+        if isinstance(item, ConsumableItem) and item.recovery_type == "mana"
+    ]
+    assert len(mana_potions) == 0

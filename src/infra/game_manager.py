@@ -88,6 +88,7 @@ class GameManager:
 
         self._game_state = GameState.create_new_game(self._hero)
 
+        self._current_room_index = 0
         self.run_exploration_loop()
 
     # SAVE & LOAD:
@@ -221,10 +222,14 @@ class GameManager:
                 if choice == "inventario":
                     self.open_inventory_menu()
                     continue
+                try:
+                    turn_result = battle.execute_turn(choice)
+                    log = turn_result.get("turn_log", {})
+                    actions_list = log.get("actions", [])
 
-                turn_result = battle.execute_turn(choice)
-                log = turn_result.get("turn_log", {})
-                actions_list = log.get("actions", [])
+                except Exception as e:
+                    self._cli.display_message(str(e))
+                    continue
 
                 # Build extra status info (ammo for Archer, mana for Mage, etc.)
                 extra_status = {}
@@ -262,8 +267,19 @@ class GameManager:
                 turn_counter += 1
 
                 if not self._hero.is_it_alive():
-                    self._cli.show_game_over()
-                    self._is_running = False
+                    game_over_choice = self._cli.show_game_over()
+
+                    if game_over_choice == "1":
+                        if self._repository.has_save():
+                            self.load_game()
+
+
+                        else:
+                            self._cli.display_message(
+                                "Você não possui um jogo salvo! Vai ter que ir do começo..."
+                            )
+                            self.setup_new_game()
+
                     return False
 
                 if hasattr(self._hero, "end_of_turn_routine"):
@@ -288,6 +304,7 @@ class GameManager:
             )
 
             room.remove_defeated_monster()
+            self.process_room_clear()
 
         return True
 
@@ -374,6 +391,5 @@ class GameManager:
     def process_room_clear(self) -> None:
         """Handles hero progression after cleaning a room."""
 
-        points_to_upgrade = 1
-        attribute_choice = self._cli.ask_upgrade_choice()
-        self._hero.upgrade(points_to_upgrade, attribute_choice)
+        points_to_upgrade = 2
+        self._hero.upgrade(points_to_upgrade)

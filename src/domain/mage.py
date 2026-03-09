@@ -143,16 +143,16 @@ class Mage(Hero):
 
         return f"{self.name} canaliza energia pura e lança MAGIA ANCESTRAL em {target.name}! {damage} de dano!"
 
-    def upgrade(self, points: int, choice: int) -> None:
+    def upgrade(self, points: int) -> None:
         """Allows to allocate stat points to upgrade the hero."""
 
-        if choice == 1:
-            self.attack += points
-        elif choice == 2:
-            self.max_mana += points
-            self.current_mana += points
-        else:
-            raise ValueError(f"Escolha Inválida: {choice}! Deve ser 1 ou 2.")
+        attack_increase = points // 2
+        mana_increase = points - attack_increase
+
+        self.attack += attack_increase
+        self.max_mana += mana_increase
+        self.current_mana += mana_increase
+
 
     def get_actions(self) -> Dict[str, Any]:
         actions = {}

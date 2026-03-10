@@ -110,6 +110,8 @@ class Warrior(Hero):
         """
         Sacrifice defense in the current turn to douple damage in the next atack.
         """
+        if self.in_rage:
+            raise ValueError(f"{self.name} já está em Fúria! ATAQUE!!")
 
         self.normal_state = {
             "in_rage": self.in_rage,

@@ -117,7 +117,7 @@ class Battle:
 
         # --- Detect special states BEFORE executing (aim / rage) ---
         was_aiming_before = getattr(self.hero, "is_aiming", False)
-        was_enraged_before = getattr(self.hero, "is_enraged", False)
+        was_enraged_before = getattr(self.hero, "in_rage", False)
 
         # --- Snapshot life values to detect damage dealt / received ---
         monster_life_before = self.monster.current_life
@@ -172,7 +172,7 @@ class Battle:
             return True
 
         # 3. Rage: Warrior activated fury
-        if not was_enraged_before and getattr(self.hero, "is_enraged", False):
+        if not was_enraged_before and getattr(self.hero, "in_rage", False):
             turn_log["actions"].append(
                 f"💢 {self.hero.name} entra em FÚRIA! Defesa reduzida, mas próximo "
                 f"ataque causará dano dobrado. (Turno consumido)"

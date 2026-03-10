@@ -35,9 +35,11 @@ class LevelFactory:
             if level in element_order:
                 chosen_environment = element_order[level]
             else:
-                valid_elements = [element for element in Element if element != Element.NEUTRAL]
+                valid_elements = [
+                    element for element in Element if element != Element.NEUTRAL
+                ]
                 chosen_environment = random.choice(valid_elements)
-        
+
         element_translation = {
             Element.FIRE: (f"{Color.ORANGE}FOGO{Color.RESET}"),
             Element.ICE: (f"{Color.CYAN}GELO{Color.RESET}"),
@@ -45,18 +47,17 @@ class LevelFactory:
             Element.POISON: (f"{Color.PURPLE}VENENO{Color.RESET}"),
         }
 
-        if (chosen_environment != Element.NEUTRAL):
+        if chosen_environment != Element.NEUTRAL:
             description = f"Você entra em uma sala dominada pelo {element_translation[chosen_environment]}."
         else:
-            description = f"Você entra em uma sala estranha... não parece ter influência elemental aqui."
+            description = "Você entra em uma sala estranha... não parece ter influência elemental aqui."
 
         monster_1 = MonsterFactory.create_monster(level, chosen_environment)
         monster_2 = MonsterFactory.create_boss(level, chosen_environment)
 
         return Room(
-            description = description,
-            environment = chosen_environment,
-            monsters = [monster_1, monster_2],
-            items = [],
+            description=description,
+            environment=chosen_environment,
+            monsters=[monster_1, monster_2],
+            items=[],
         )
-

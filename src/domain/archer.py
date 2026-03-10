@@ -210,6 +210,9 @@ class Archer(Hero):
         self.max_ammo += ammo_increase
         self.attack += attack_increase
 
+        self.max_life += 10
+        self.current_life += 10
+
     def get_actions(self) -> dict:
         """
         Returns available combat actions for this archetype.

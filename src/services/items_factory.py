@@ -24,17 +24,17 @@ class ItemsFactory:
         """Returns fresh ConsumableItem instances based on a drop chance."""
         drops = []
 
-        if random.random() <= 0.40:
+        if random.random() <= 0.70:
             drops.append(
                 ConsumableItem(
                     name="Poção de Cura",
-                    description="Recupera 25 de Vida.",
+                    description="Recupera 40 de Vida.",
                     weight=0.5,
-                    recovered_value=25,
+                    recovered_value=40,
                 )
             )
 
-        if random.random() <= 0.30:
+        if random.random() <= 0.50:
             drops.append(
                 ConsumableItem(
                     name="Poção de Mana",

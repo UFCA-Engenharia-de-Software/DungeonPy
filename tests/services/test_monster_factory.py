@@ -18,8 +18,8 @@ def test_monster_scaling_attributes():
     level = 3
     monster = MonsterFactory.create_monster(level=level)
 
-    assert monster.max_life == 70 + (level * 15)
-    assert monster.attack == 10 + (level * 5)
+    assert monster.max_life == 55 + (level * 10)
+    assert monster.attack == 8 + (level * 5)
     assert monster.speed == 5 + level
 
 

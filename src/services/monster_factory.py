@@ -38,8 +38,8 @@ class MonsterFactory:
         name = random.choice(cls.BASE_NAMES[element])
 
         # Progressive scaling
-        max_life = 70 + (level * 15)
-        attack = 10 + (level * 5)
+        max_life = 55 + (level * 10)
+        attack = 8 + (level * 5)
         speed = 5 + level
 
         art = MONSTER_ARTS.get(name, MONSTER_ARTS["DEFAULT"])
@@ -71,10 +71,10 @@ class MonsterFactory:
         since their name won't match any DROP_TABLE entry.
         To give bosses unique drops, add their name to DROP_TABLES.
         """
-        name = f"Guardião Supremo de {element.name.title()}"
+        name = random.choice(cls.BASE_NAMES[element])
 
-        max_life = 130 + (level * 25)
-        attack = 25 + (level * 8)
+        max_life = 120 + (level * 20)
+        attack = 20 + (level * 8)
         speed = 10 + level
 
         description = f"{name}, um chefe elemental extremamente poderoso."

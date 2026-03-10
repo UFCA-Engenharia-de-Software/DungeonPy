@@ -76,14 +76,12 @@ class BurnState(State):
 
     def apply_effect(self, entity):
         if not self._applied:
-            # Modifica o ataque diretamente no alvo!
             entity.attack -= self.attack_decrease
             self._applied = True
 
         self.duration_turns -= 1
 
         if self.duration_turns <= 0:
-            # Devolve o ataque quando o efeito passa
             entity.attack += self.attack_decrease
 
     def prevents_action(self) -> bool:
@@ -121,14 +119,12 @@ class FrozenState(State):
 
     def apply_effect(self, entity):
         if not self._applied:
-            # Modifica a velocidade diretamente no alvo!
             entity.speed -= self.speed_decrease
             self._applied = True
 
         self.duration_turns -= 1
 
         if self.duration_turns <= 0:
-            # Devolve a velocidade quando o efeito passa
             entity.speed += self.speed_decrease
 
     def prevents_action(self) -> bool:

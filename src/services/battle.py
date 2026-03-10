@@ -95,14 +95,10 @@ class Battle:
         action_description = selected_action["description"]
 
         # --- Detect consumable use BEFORE executing ---
-        # The action method for consumables points to item.use(), which does NOT
-        # receive a target. We detect this by checking if the bound method's owner
-        # is a ConsumableItem instance, signaling that the turn is spent healing.
         consumable_item = getattr(action_method, "__self__", None)
         is_consumable_action = isinstance(consumable_item, ConsumableItem)
 
         # Bloqueia poção de mana para classes sem mana (Guerreiro, Arqueiro).
-        # O turno NÃO é consumido — o jogador deve escolher outra ação.
         if (
             is_consumable_action
             and getattr(consumable_item, "recovery_type", "life") == "mana"
@@ -128,15 +124,11 @@ class Battle:
             else "Neutral"
         )
 
-        # --- Snapshot dodge state before action (Archer) ---
-
         try:
-            action_method(self.monster)
+            action_result = action_method(self.monster)
         except TypeError:
-            action_method()
+            action_result = action_method()
         except ValueError as e:
-            # "If insufficient resources (no ammunition, no mana, etc.)
-            # The turn is NOT consumed — the player must choose another action."
             turn_log["actions"].append(f"⚠️  {self.hero.name}: {e}")
             turn_log["action_failed"] = True
             return False
@@ -185,7 +177,6 @@ class Battle:
         ammo_max = getattr(self.hero, "max_ammo", None)
         if ammo_after is not None and ammo_max is not None:
             ammo_info = f"[Flechas: {ammo_after}/{ammo_max}]"
-            # Detect reload: ammo increased without an attack being made
             ammo_before_action = getattr(self, "_ammo_snapshot", ammo_after)
             if (
                 ammo_after > ammo_before_action
@@ -196,22 +187,59 @@ class Battle:
                 )
                 return True
 
-        # 5. Attack: check if monster dodged / blocked, or if hero missed
+        # 5. Attack: verifica se o ataque zerou (erro do Arqueiro ou dano muito baixo)
         damage_dealt = monster_life_before - self.monster.current_life
 
-        if damage_dealt <= 0:
-            # Missed (e.g. dodge mechanic on the monster side or 0-damage edge case)
-            turn_log["actions"].append(
-                f"💨 {self.hero.name} atacou, mas {self.monster.name} esquivou ou o ataque errou!"
-            )
+        if isinstance(action_result, str):
+            turn_log["actions"].append(f"✨ {action_result}")
+
+            # (Opcional: Se quiser que o Tiro Triplo também mostre super efetivo,
+            # você pode colocar a lógica do multiplier aqui dentro também!)
+
+        # SE NÃO TEM TEXTO PRÓPRIO, USA A NOSSA LÓGICA PADRÃO DE DANO:
+        elif damage_dealt <= 0:
+            if hasattr(self.hero, "current_ammo") and not was_aiming_before:
+                turn_log["actions"].append(
+                    f"💨 {self.hero.name} atirou, mas a flecha errou o alvo!"
+                )
+            else:
+                turn_log["actions"].append(
+                    f"🛡️ {self.hero.name} atacou, mas o golpe foi fraco demais para ferir {self.monster.name}!"
+                )
         else:
-            attack_msg = (
-                f"⚔️  {self.hero.name} executou '{action_description}' "
-                f"e causou {damage_dealt} de dano em {self.monster.name}."
+            # Descobre o elemento que o herói usou para atacar
+            if hasattr(self.hero, "equipped_weapon") and self.hero.equipped_weapon:
+                atk_element = self.hero.equipped_weapon.element
+            else:
+                atk_element = self.hero.element
+
+            # Calcula a matemática reversa para mostrar o dano base!
+            multiplier = atk_element.multiplier(self.monster.element)
+            base_damage_calc = (
+                int(damage_dealt / multiplier) if multiplier > 0 else damage_dealt
             )
-            # Append aiming bonus note if hero was aiming before this attack
+            if was_enraged_before:
+                base_damage_calc = base_damage_calc // 2
+
+            # Monta a mensagem rica
+            attack_msg = f"⚔️  {self.hero.name} usou '{action_description}' com {base_damage_calc} de dano."
+
+            # Adiciona os modificadores de classe
             if was_aiming_before:
-                attack_msg += " (Dano de mira!)"
+                attack_msg += " 🎯 (Mira: Acerto Crítico!)"
+            if was_enraged_before:
+                attack_msg += " 💢 (Fúria: Dano Base Dobrado!)"
+
+            # Adiciona a efetividade elemental no final
+            if multiplier > 1.0:
+                attack_msg += f" 🌟 Super Efetivo! Dano final aumentou para {damage_dealt} em {self.monster.name}."
+            elif multiplier < 1.0:
+                attack_msg += f" 🛡️ Resistido... Dano final caiu para {damage_dealt} em {self.monster.name}."
+            else:
+                attack_msg += (
+                    f" Causou {damage_dealt} de dano final em {self.monster.name}."
+                )
+
             turn_log["actions"].append(attack_msg)
 
         monster_status_after = (
@@ -220,9 +248,7 @@ class Battle:
             else "Neutral"
         )
 
-        # Se o monstro estava normal e agora tem status, avisa na tela!
         if monster_status_before == "Neutral" and monster_status_after != "Neutral":
-            # Manter emojis, pois não dá para trocar as cores
             status_pt = {
                 "Burned": "🔥 QUEIMADURA",
                 "Frozen": "❄️ CONGELAMENTO",
@@ -247,7 +273,6 @@ class Battle:
         reporting dodge (Archer) and block (Warrior) outcomes.
         """
         hero_life_before = self.hero.current_life
-        dodge_before = getattr(self.hero, "dodge", False)
 
         self.monster.strike(self.hero)
 
@@ -257,11 +282,13 @@ class Battle:
         # --- Dodge (Archer) ---
         # After damage_received(), the Archer resets self.dodge to False if it dodged.
         # We detect the dodge by checking: was dodge True before, and now life didn't drop.
-        dodged = dodge_before and damage_taken == 0
+        dodged = getattr(self.hero, "last_dodged", False)
         if dodged:
             turn_log["actions"].append(
                 f"💨 {self.hero.name} esquivou do ataque de {self.monster.name}!"
             )
+            # Reseta o aviso para não ficar esquivando para sempre
+            self.hero.last_dodged = False
             return
 
         # --- Block (Warrior) ---
@@ -278,13 +305,27 @@ class Battle:
 
         # --- Normal hit ---
         if damage_taken > 0:
-            turn_log["actions"].append(
-                f"🐉 {self.monster.name} atacou {self.hero.name} e causou {damage_taken} de dano."
+            multiplier_monstro = self.monster.element.multiplier(self.hero.element)
+            base_damage_monstro = (
+                int(damage_taken / multiplier_monstro)
+                if multiplier_monstro > 0
+                else damage_taken
             )
+
+            msg = f"🐉 {self.monster.name} atacou {self.hero.name} com {base_damage_monstro} de dano."
+
+            if multiplier_monstro > 1.0:
+                msg += f" 🌟 Super Efetivo! Dano final aumentou para {damage_taken}."
+            elif multiplier_monstro < 1.0:
+                msg += f" 🛡️ Resistido... Dano final caiu para {damage_taken}."
+            else:
+                msg += f" Causou {damage_taken} de dano."
+
+            turn_log["actions"].append(msg)
         else:
             # Hit but dealt no damage (e.g. full armor absorption)
             turn_log["actions"].append(
-                f"🐉 {self.monster.name} atacou {self.hero.name}, mas não causou dano!"
+                f"🐉 {self.monster.name} atacou {self.hero.name}, mas a armadura absorveu todo o impacto!"
             )
 
     def get_available_actions(self) -> dict:

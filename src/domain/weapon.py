@@ -67,14 +67,12 @@ class Weapon(Item):
     def _apply_elemental_status(self, target: Entity) -> None:
         """50% de chance de aplicar o status do elemento da arma no alvo."""
         if random.random() <= 0.50:  # Role os dados!
-            # Lê o status do alvo de verdade. Se não tiver, vira "Neutral"
             status_atual = (
                 target.current_status.name
                 if getattr(target, "current_status", None)
                 else "Neutral"
             )
 
-            # Só aplica um status novo se o monstro estiver "limpo" (Neutral)
             if status_atual == "Neutral":
                 if self.element == Element.FIRE:
                     target.set_status(BurnState(duration_turns=2, attack_decrease=5))

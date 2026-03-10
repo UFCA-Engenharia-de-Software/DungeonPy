@@ -335,7 +335,6 @@ class GameManager:
 
             elif action == "usar":
                 if isinstance(selected_item, ConsumableItem):
-                    # Poção de mana só funciona para o Mago
                     if selected_item.recovery_type == "mana" and not hasattr(
                         self._hero, "current_mana"
                     ):

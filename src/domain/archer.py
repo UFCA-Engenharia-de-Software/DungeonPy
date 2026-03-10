@@ -142,6 +142,7 @@ class Archer(Hero):
 
         if self.dodge:
             # Dodge successful: reset flag and skip damage entirely
+            self.last_dodged = True
             self.reset_dodge()
             return
 

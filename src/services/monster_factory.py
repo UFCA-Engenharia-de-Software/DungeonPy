@@ -18,10 +18,10 @@ class MonsterFactory:
     """
 
     BASE_NAMES = {
-        Element.FIRE: ["Salamandra", "Demônio Ígneo", "Espírito Vulcânico"],
-        Element.ICE: ["Golem de Gelo", "Lobo Glacial", "Espectro Congelado"],
-        Element.LIGHTNING: ["Serpente Elétrica", "Raijin", "Elemental de Raio"],
-        Element.POISON: ["Aranha Tóxica", "Hidra Venenosa", "Slime Corrosivo"],
+        Element.FIRE: ["Salamandra", "Lobo de Fogo", "Cavaleiro de Fogo"],
+        Element.ICE: ["Golem de Gelo", "Yeti", "Espectro Congelado"],
+        Element.LIGHTNING: ["Serpente Elétrica", "Raijin", "Medusa Elétrica"],
+        Element.POISON: ["Aranha Tóxica", "Hidra Venenosa", "Sapo Venenoso"],
         Element.NEUTRAL: ["Goblin", "Orc", "Bandido Sombrio"],
     }
 
@@ -77,6 +77,8 @@ class MonsterFactory:
         attack = 20 + (level * 8)
         speed = 10 + level
 
+        art = MONSTER_ARTS.get(name, MONSTER_ARTS["DEFAULT"])
+
         description = f"{name}, um chefe elemental extremamente poderoso."
 
         # Bosses always drop the fixed potions; unique gear can be added
@@ -91,4 +93,5 @@ class MonsterFactory:
             element=element,
             loot=loot,
             description=description,
+            art=art,
         )

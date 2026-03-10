@@ -122,17 +122,17 @@ def test_create_items_invalid_type_raises():
 def test_every_monster_has_drop_table():
     expected_monsters = [
         "Salamandra",
-        "Demônio Ígneo",
-        "Espírito Vulcânico",
+        "Cavaleiro de Fogo",  # NOME NOVO
+        "Lobo de Fogo",  # NOME NOVO
         "Golem de Gelo",
-        "Lobo Glacial",
+        "Yeti",  # NOME NOVO
         "Espectro Congelado",
         "Serpente Elétrica",
         "Raijin",
-        "Elemental de Raio",
+        "Medusa Elétrica",  # NOME NOVO
         "Aranha Tóxica",
         "Hidra Venenosa",
-        "Slime Corrosivo",
+        "Sapo Venenoso",  # NOME NOVO
         "Goblin",
         "Orc",
         "Bandido Sombrio",

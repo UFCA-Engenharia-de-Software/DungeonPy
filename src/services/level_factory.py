@@ -1,4 +1,5 @@
 from services.monster_factory import MonsterFactory
+from infra.cli import Color
 from domain.room import Room
 from domain.element import Element
 import random
@@ -38,10 +39,10 @@ class LevelFactory:
                 chosen_environment = random.choice(valid_elements)
         
         element_translation = {
-            Element.FIRE: "FOGO",
-            Element.ICE: "GELO",
-            Element.LIGHTNING: "RAIO",
-            Element.POISON: "VENENO",
+            Element.FIRE: (f"{Color.ORANGE}FOGO{Color.RESET}"),
+            Element.ICE: (f"{Color.CYAN}GELO{Color.RESET}"),
+            Element.LIGHTNING: (f"{Color.YELLOW}RAIO{Color.RESET}"),
+            Element.POISON: (f"{Color.PURPLE}VENENO{Color.RESET}"),
         }
 
         if (chosen_environment != Element.NEUTRAL):

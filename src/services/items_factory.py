@@ -48,6 +48,7 @@ class ItemsFactory:
         return drops
 
     # Table of drops the monster
+    # Table of drops the monster
     DROP_TABLES = {
         # Drop fire items
         "Salamandra": {  # grimoire
@@ -61,7 +62,7 @@ class ItemsFactory:
                 }
             ]
         },
-        "Demônio Ígneo": {  # weapon
+        "Cavaleiro de Fogo": {  # weapon (ANTES ERA Demônio Ígneo)
             "weapon": [
                 {
                     "name": "Espada Incandescente",
@@ -70,7 +71,7 @@ class ItemsFactory:
                 }
             ]
         },
-        "Espírito Vulcânico": {  # ranged_weapon
+        "Lobo de Fogo": {  # ranged_weapon (ANTES ERA Espírito Vulcânico)
             "ranged_weapon": [
                 {
                     "name": "Arco Vulcânico",
@@ -91,7 +92,7 @@ class ItemsFactory:
                 }
             ]
         },
-        "Lobo Glacial": {  # ranged_weapon
+        "Yeti": {  # ranged_weapon (ANTES ERA Lobo Glacial)
             "ranged_weapon": [
                 {
                     "name": "Arco Congelante",
@@ -136,7 +137,7 @@ class ItemsFactory:
                 }
             ]
         },
-        "Elemental de Raio": {  # weapon
+        "Medusa Elétrica": {  # weapon (ANTES ERA Elemental de Raio)
             "weapon": [
                 {
                     "name": "Lâmina Trovejante",
@@ -168,7 +169,7 @@ class ItemsFactory:
                 }
             ]
         },
-        "Slime Corrosivo": {  # ranged_weapon
+        "Sapo Venenoso": {  # ranged_weapon (ANTES ERA Slime Corrosivo)
             "ranged_weapon": [
                 {
                     "name": "Lançador Corrosivo",

@@ -76,6 +76,7 @@ class Warrior(Hero):
         self._attempt_defend()
 
         if self.defend:
+            self.last_blocked = True
             self._reset_defend()
             return
 

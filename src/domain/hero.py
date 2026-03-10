@@ -82,13 +82,12 @@ class Hero(Entity):
         pass
 
     @abstractmethod
-    def upgrade(self, points: int, choice: int) -> None:
+    def upgrade(self, points: int) -> None:
         """
         Upgrade specific attributes.
 
         Args:
             poinst (int): amount of points that the player have.
-            choice (int): selected attribute to upgrade.
         """
         pass
 

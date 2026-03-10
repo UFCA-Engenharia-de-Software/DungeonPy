@@ -194,8 +194,7 @@ class Archer(Hero):
 
     def end_of_turn_routine(self):
         """Resets aiming for GameManager using."""
-        if self.is_aiming:
-            self.is_aiming = False
+        pass
 
     def upgrade(self, points: int) -> None:
         """Upgrade specific attributes (attack, speed)

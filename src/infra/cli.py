@@ -4,6 +4,14 @@ import time
 
 
 class Color:
+    """
+    Gerencia as cores e formatações ANSI para a interface de terminal (CLI).
+
+    Utiliza a paleta estendida de 256 cores do terminal para garantir que os tons
+    (como amarelo vibrante e vermelho vivo) sejam exibidos com alta fidelidade e
+    contraste em diferentes sistemas operacionais, melhorando a imersão visual do jogo.
+    """
+
     # --- Cores Universais (Forçando tons específicos da paleta de 256 cores) ---
     RED = "\033[38;5;196m"  # Vermelho vivo e vibrante
     GREEN = "\033[38;5;46m"  # Verde neon/claro

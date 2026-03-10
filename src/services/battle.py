@@ -122,6 +122,11 @@ class Battle:
         # --- Snapshot life values to detect damage dealt / received ---
         monster_life_before = self.monster.current_life
         hero_life_before = self.hero.current_life
+        monster_status_before = (
+            self.monster.current_status.name
+            if self.monster.current_status
+            else "Neutral"
+        )
 
         # --- Snapshot dodge state before action (Archer) ---
 
@@ -208,6 +213,26 @@ class Battle:
             if was_aiming_before:
                 attack_msg += " (Dano de mira!)"
             turn_log["actions"].append(attack_msg)
+
+        monster_status_after = (
+            self.monster.current_status.name
+            if self.monster.current_status
+            else "Neutral"
+        )
+
+        # Se o monstro estava normal e agora tem status, avisa na tela!
+        if monster_status_before == "Neutral" and monster_status_after != "Neutral":
+            # Manter emojis, pois não dá para trocar as cores
+            status_pt = {
+                "Burned": "🔥 QUEIMADURA",
+                "Frozen": "❄️ CONGELAMENTO",
+                "Poison": "☠️ VENENO",
+                "Stunned": "⚡ ATORDOAMENTO",
+            }
+            nome_status = status_pt.get(monster_status_after, monster_status_after)
+            turn_log["actions"].append(
+                f"✨ O ataque do seu elemento aplicou {nome_status} em {self.monster.name}!"
+            )
 
         # Always append ammo info for Archer after any action
         ammo_info = self._get_archer_ammo_info()

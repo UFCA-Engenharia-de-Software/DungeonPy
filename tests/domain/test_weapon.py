@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -77,7 +77,8 @@ def test_attack_applies_correct_damage():
     mock_target.damage_received.assert_called_once_with(30, Element.FIRE)
 
 
-def test_attack_uses_updated_base_damage():
+@patch("domain.weapon.random.random", return_value=1.0)
+def test_attack_uses_updated_base_damage(mock_random):
     weapon = Weapon(name="Sword", base_damage=5, element=Element.ICE)
 
     weapon.base_damage = 15
@@ -92,7 +93,8 @@ def test_attack_uses_updated_base_damage():
     mock_target.damage_received.assert_called_once_with(25, Element.ICE)
 
 
-def test_get_attacks_returns_expected_structure():
+@patch("domain.weapon.random.random", return_value=1.0)
+def test_get_attacks_returns_expected_structure(mock_random):
     weapon = Weapon(name="Sword", base_damage=10)
 
     attacks = weapon.get_attacks()
@@ -157,3 +159,63 @@ def test_weapon_has_allowed_class_warrior():
     weapon = Weapon(name="Espada", base_damage=10)
     assert hasattr(weapon, "allowed_class")
     assert weapon.allowed_class == ["Warrior"]
+
+
+@patch("domain.weapon.random.random", return_value=0.80)
+def test_apply_status_fails_when_rng_is_low(mock_random):
+    """Garante que a arma NÃO aplica status se o random for maior que 50%."""
+    weapon = Weapon(name="Espada Normal", base_damage=10, element=Element.FIRE)
+    mock_target = MagicMock(spec=Entity)
+
+    weapon._apply_elemental_status(mock_target)
+
+    # O alvo não deve receber nenhum status
+    mock_target.set_status.assert_not_called()
+
+
+@patch("domain.weapon.random.random", return_value=0.30)
+def test_apply_status_fire_applies_burn(mock_random):
+    """Armas de Fogo devem aplicar BurnState quando o RNG favorece."""
+    weapon = Weapon(name="Espada de Fogo", base_damage=10, element=Element.FIRE)
+    mock_target = MagicMock(spec=Entity)
+    mock_target.current_status = None
+
+    weapon._apply_elemental_status(mock_target)
+
+    mock_target.set_status.assert_called_once()
+
+
+@patch("domain.weapon.random.random", return_value=0.30)
+def test_apply_status_ice_applies_frozen(mock_random):
+    """Armas de Gelo devem aplicar FrozenState quando o RNG favorece."""
+    weapon = Weapon(name="Espada de Gelo", base_damage=10, element=Element.ICE)
+    mock_target = MagicMock(spec=Entity)
+    mock_target.current_status = None
+
+    weapon._apply_elemental_status(mock_target)
+
+    mock_target.set_status.assert_called_once()
+
+
+@patch("domain.weapon.random.random", return_value=0.30)
+def test_apply_status_poison_applies_poisoned(mock_random):
+    """Armas de Veneno devem aplicar PoisonedState quando o RNG favorece."""
+    weapon = Weapon(name="Adaga Tóxica", base_damage=10, element=Element.POISON)
+    mock_target = MagicMock(spec=Entity)
+    mock_target.current_status = None
+
+    weapon._apply_elemental_status(mock_target)
+
+    mock_target.set_status.assert_called_once()
+
+
+@patch("domain.weapon.random.random", return_value=0.30)
+def test_apply_status_lightning_applies_stunned(mock_random):
+    """Armas de Raio devem aplicar StunnedState quando o RNG favorece."""
+    weapon = Weapon(name="Martelo do Trovão", base_damage=10, element=Element.LIGHTNING)
+    mock_target = MagicMock(spec=Entity)
+    mock_target.current_status = None
+
+    weapon._apply_elemental_status(mock_target)
+
+    mock_target.set_status.assert_called_once()

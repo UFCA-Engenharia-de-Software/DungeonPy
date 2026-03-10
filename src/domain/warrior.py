@@ -87,6 +87,10 @@ class Warrior(Hero):
         armor_increase = points - shield_increase
         self.shield += shield_increase
         self.armor += armor_increase
+        self.attack += 2
+
+        self.max_life += 10
+        self.current_life += 10
 
     def _attempt_defend(self):
         """Check if defense succeeds based on shield strength"""
